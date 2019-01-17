@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.amlibtestingapi;
+package uk.gov.hmcts.reform.amlib;
 
 public class DummyService {
 
