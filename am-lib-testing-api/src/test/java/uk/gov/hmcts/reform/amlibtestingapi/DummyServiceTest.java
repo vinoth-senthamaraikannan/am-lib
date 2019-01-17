@@ -1,7 +1,6 @@
-package uk.gov.hmcts.reform.amlib;
+package uk.gov.hmcts.reform.amlibtestingapi;
 
 import org.junit.Test;
-import uk.gov.hmcts.reform.amlibtestingapi.MyDummyService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
