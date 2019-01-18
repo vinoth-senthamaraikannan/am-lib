@@ -15,6 +15,7 @@ deploy:
 - provider: script
   script: "./gradlew bintrayUpload"
   skip_cleanup: true
+  dry_run: true
   on:
     all_branches: true
     repo: hmcts/am-lib
