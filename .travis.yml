@@ -16,7 +16,7 @@ script:
 #- bash <(curl -s https://codecov.io/bash)
 deploy:
 - provider: script
-  script: cd am-lib && ./gradlew bintrayUpload
+  script: ./gradlew bintrayUpload
   skip_cleanup: true
   on:
     all_branches: true
