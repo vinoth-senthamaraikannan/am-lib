@@ -3,7 +3,7 @@
 
 def type = "java"
 def product = "am"
-def component = "lib-testing-service"
+def component = "lib-test"
 
 withPipeline(type, product, component) {
     echo env.CHANGE_TITLE

@@ -6,7 +6,7 @@ variable "product" {
 
 variable "component" {
   type = "string"
-  default = "lib-testing-service"
+  default = "lib-test"
 }
 
 variable "location_app" {
