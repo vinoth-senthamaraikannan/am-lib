@@ -1,0 +1,3 @@
+rootProject.name = 'am-lib-root'
+include 'am-lib-testing-api'
+include 'am-lib'

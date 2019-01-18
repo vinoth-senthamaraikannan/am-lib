@@ -26,8 +26,6 @@ dependencies {
     compile project(':am-lib')
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
 
-//    testCompile project(path: ':am-lib', configuration: 'testOutput')
-
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
