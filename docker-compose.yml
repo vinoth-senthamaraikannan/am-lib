@@ -1,0 +1,45 @@
+version: '2.1'
+
+services:
+  am-lib-testing-service-db:
+    container_name: am-lib-testing-service-db
+    build: ./docker/am-lib-testing-service-db
+    networks:
+      - am-lib-testing-service-network
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=amuser
+      - POSTGRES_PASSWORD=ampass
+      - POSTGRES_DB=am
+  am-lib-testing-service:
+    build:
+      context: .
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+    image: hmcts/am-lib-testing-service
+    container_name: am-lib-testing-service
+    depends_on:
+      - am-lib-testing-service-db
+    environment:
+      # these environment variables are used by java-logging library
+      - ROOT_APPENDER
+      - JSON_CONSOLE_PRETTY_PRINT
+      - ROOT_LOGGING_LEVEL
+      - REFORM_SERVICE_TYPE
+      - REFORM_SERVICE_NAME
+      - REFORM_TEAM
+      - REFORM_ENVIRONMENT
+      - LOGBACK_DATE_FORMAT
+      - LOGBACK_REQUIRE_THREAD
+      - LOGBACK_REQUIRE_ALERT_LEVEL=false
+      - LOGBACK_REQUIRE_ERROR_CODE=false
+    ports:
+      - 2704:2703
+    networks:
+      - am-lib-testing-service-network
+networks:
+  am-lib-testing-service-network:
+    driver: bridge

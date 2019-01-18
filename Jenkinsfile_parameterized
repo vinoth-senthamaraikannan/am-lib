@@ -1,0 +1,16 @@
+#!groovy
+@Library("Infrastructure") _
+
+def type = "java"
+def product = "am"
+def component = "am-lib-testing-service"
+
+withPipeline(type, product, component) {
+    echo env.CHANGE_TITLE
+    if (env.CHANGE_TITLE && !env.CHANGE_TITLE.contains('[PREVIEW]')
+        && env.CHANGE_TITLE.contains('[AKS]')) {
+        setVaultName('am')
+        enableDockerBuild()
+        installCharts()
+    }
+}
