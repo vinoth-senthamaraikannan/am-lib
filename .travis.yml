@@ -7,33 +7,18 @@ before_cache:
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 script:
 - cd am-lib && ./gradlew build
-#after_success:
-#- ./am-lib/gradlew codeCoverageReport
-#- bash <(curl -s https://codecov.io/bash)
 deploy:
 - provider: script
-  script: ./gradlew bintrayUpload
+  script: "./gradlew bintrayUpload"
   skip_cleanup: true
   on:
     all_branches: true
     repo: hmcts/am-lib
-#    tags: true
-#- provider: releases
-#  api_key:
-#    secure: f90s/M0JeoOwZENfReNfEg3Y4ThaDfVS9o/D3lCqQZYvzdqbkWVWpwT9y1dnYPT0yARujoJTy8qrOmoStr8Sz2PuWgWVHfRhIIcn858dxz9Auprs8cFaSqlZS2ynIy33EsasSaFmCb95X1mMaifiNi3GHwJDdpCc9AOXV2EGEhkbgug5MaEgkxg1n22v3F4ciTIdWrl258HUVCoVVOs64tEQ69B1n0TRBP18mRJNnY+bsXkYJ9/Jb+Mc9xz2NhmHFZ+K9IC5z2ds1PTRgzLOV3fviyplflWxME6yK+FDKilhDqAbwzaVpLYE8n4SfMgBkrx1M9Y4ZpCHj+x4mJ9jTGwHhYta+un9H5LYyxZGewfcJ0oOqGR8kOvVtrnPYkCgfMT9vA0gNSezVg60kcnLtZ2YYe/H5xlJbg1GmLwOxq0Gpa196E2IYGvMNEfOHkiShhme2FQ3iptYnzDqvccXVZ4/PHoIM7Y1z/FsRJXMjmFZAwUFLgxhanylrPcoWd/N98VubZKvm5leOrpyPhqGiczKMTBuBWXtNaEoW25cj85P7D+zZ9jcFkMoOgGQv/wZ8zKeK5/BS0on2526dN085fMbvbmZJoKktxNJaj/dsRdLOtzQ8drqz0jAmPVt8ErWL4pYBUBNCjSf1N40EMykJpt26vyvEwN05Q+LFU37XjM=
-#  file_glob: true
-#  file:
-#  - /am-lib/build/libs/am-lib-*.jar
-#  skip_cleanup: true
-#  on:
-#    all_branches: true
-#    repo: hmcts/am-lib
-#    tags: true
 env:
   global:
-  - secure: ZOZxE12GoXQXViQTon7sLuOwGjxolwV7HvANARKIF6mXwOsKmJWPhGI6z0Wv5samcZsn9cM75KCdJBAqc1399aKtA6RUc6YE9dGUjel99A+pciRO76ru/lGFcQgsH2SarJhswR7XFr9gj5GeTYO27fY6Oezyv3g53LKSMXGcW+lJvx5I1H26/7fZLS+rEAxN8u9omoIy8wyohIbbav2NJc7IQA8oYjlNGxcnMDWXLjImE231xyS0zeDfbNxXmeAPenqe+HTg7ED/F/AtSZgY3EvoIvrUzU/iCTvqGhoGZ1+rELaLy5UFvP7UO4dC5g/TbMuWCl4fBE6nvpA1ZZ1z7y6DxZbfl60CObXEROfP6efT3+JX8EPqAsxlVl/8aljNXAv64ASjxgJlptmhCKkQ32CVdcHDMRT/iKHlv4RVo9GmrgG29+nUUw3Dfsagm2d81D4d4OCDXOFBBsueIMhJhuq5+iiNvlFd1w7RsKj3F+DrtlwRSRLh3yCP+3A7Q904Hd8ohpQnrfiKPOlAYrtbqeq3mRNBNNW1hP5rINGjUvD35vx2IPmYxxtlre9dn7Clx/r6zIQkqPJ4/1eTHwNp9h29cIyLMPhdAlRTG4XTovEbS7seKNUvzmpBksPsdGCCVG7CO5ROL2Iwq9TZqLLBXzUpOKwzG9CEQyALzueLZac=
-  - secure: YKdcm5xzEZjQTJKl850WavrRQn5FNFZw64pIw+ZOEpy8sFyAG8Sp7gGgnrdSpwGhOtieXdPu3XbbYOOHmzT5IcoKw7WiCd46xev4UM5o3a2p0jdZ+YQ9fxzuXnq4FxQtExG9et9vc3DdoN1K2UyjISjxUt2qCrqUPBq0RHExvJIz83zk9umKhywvXVVm8Jjp1wmVWAx9h9IxyqnFR9bkbCRjQGp1llGsJZ4xZbo8t11jUWzL4DZezak0RVrUfrmGBJyjqM7epzrzLq3so34KQ5CjXedaUFiQoLYRrEegf+/bTrI7A/BDy/ojMpoPmcuC+pWkeCiMBGsl1mhJoBg0rdm4h+JCx2i+TWKhY+SB/FdfE9fcIs3XK1lZiSkilyZepTIkkqxOld3v5TsEVpgK8trON6RBA8dk6z7mhvupiSjx1SKd5C7iX677Hg6bpSuQbOr1Bg1s4sL9aEUJ4BQpwftelOpwFERKxAx9TVlKhtG6Z7/OnCveqc/SMfI+AbsxuF57Fw63lt91nzT+rfdpyMPscB8b6Bl7jc6BaiKZDwMG+/TDBxoKLreN8FSqjMe72YYqgq8EvRv0h26lmPZg4QaO6L5/HM5VM9YxyjRkDbJ9hSynF2jRA3M0fzTqt7+DmPq4SUTqAnBKYNiQ+Iw6mi/3mQGAdl39axUoeB38EGI=
+  - secure: ZNaNkz7369onteUmPQeoGsILFGXhD2/PJBfPJmKQKAGYqPmhfBYEUFGjsukLi02URvwviIenntzJ5y4TE5a1oUKc1AEyWAq79iVqjkxjLP2sY9ZLNkuTRYptrqUXx5ElJPvb19jrjJcMvMwikmXa1vPOGAGNBZnr/QY0EIwAPdFDdsMKGg9IuT5vZcmBLufJV9QXAcoogRxL7ZS9inL7F4sfHVGBk4cL7gMDLd+/mq89rWLNAxJdfkFc83z/NzW7fc6c/hSeuHnIRnaCFFYaodUTOFObnCJVuyzafCcJ72/FOc8XkNnoM/69PUlgGDu65UNXcve9qg4n2ks52D/o+N6zkhKLqvg81TlQh9liQjVEgICPYbVj+WFzSyVLYvO3+VtK0pQE/HpMXypm23cIXKMmgooHj7Luj9R75HCtk82vUrQVWv0Djdjm1afA3BL22b4Q+hN0Qu3GYhZc2zCfsf1/87+TMoJFtEBGzzcUWuK/fTnH4rW5KeiBRG18fQyxFaHOYbygz3S2l+bF5dwGP2f8/Agvyemx2A2lNOQQ0zAOVBNRXsLF2LTlPCprbjY2dAyHYGOFXZHieLtpeMLYfmNJr3q63DlN/UtO0Lo2pXsYzEMTeNcULaUlrO7qJ2mcq/aoT2MRjAy5N8GMPqO8Q5u/NwbM/E2WkfmbzysbVis=
+  - secure: WqWj/qYO/DMeWjQlpa4QXhntC4y4KniNJACt5PrzcGkqdxno6GoGuJnAznXlbUTSI73yRbO9jzRPjCX1JZzvqKTGswhmsBbR1Sd3rbNncYAd1MarUM71011XSUln+6lzQfj+2V8orEoej3Qt88YeKk1geL+WzJqzCXVf1y6khAZmtwGW/xa/wKYc9BYqWYqgNY/HVgoyStrafET1qv8pv8sCeATsw0C+6gkLhM8gc+E+9r1RCxhQyHAnsu9dfY0p2JpUQ5CFUadxzWRng6zqQnLrxqYNYnAG9Fl36oUfYr74WLReho9orMYxxmBc/YTvDaS+pDAcwtCgBgdmXK9LRXt8449qlb8p9plXYK7Yaca3BIMxnxsCltOx8LVyiNFpej20OTPYZ2rHa4JNPDr672WOlDWLoSivVnISEBIm17bGxoy6pVe5zwimoYbZRH/UPKMNw359tOSEtDZENribnDFGFgHGBFfRTp2IwA7+tVHcnAtfDzapC7zQjbRY41I4B3ETD4K4d3+qU8/j0yeeyl/mN9cMe4+H4dPRuB2rAWGZCrsiVvTyuINDkC8++SO2AIKtUJUA49ku66V7q4YQ4dINAoHWMArjHGqBZ2rFWa2Ds3FiCjZ0tNRSiQdctSOwfxOYhorn+deE8BPTXOHQUtPYyTIqOgXEj28sIlImciY=
