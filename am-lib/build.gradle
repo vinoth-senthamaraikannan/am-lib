@@ -95,6 +95,9 @@ publishing {
 }
 
 bintray {
+  println System.getenv( 'MY_VAR' )
+  println System.getenv( 'MY_OTHER_VAR' )
+  
   user = System.getenv('BINTRAY_USER')
   key = System.getenv('BINTRAY_KEY')
   publications = ['Main']
