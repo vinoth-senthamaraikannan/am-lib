@@ -21,7 +21,7 @@ deploy:
   on:
     all_branches: true
     repo: hmcts/am-lib
-    tags: true
+#    tags: true
 #- provider: releases
 #  api_key:
 #    secure: f90s/M0JeoOwZENfReNfEg3Y4ThaDfVS9o/D3lCqQZYvzdqbkWVWpwT9y1dnYPT0yARujoJTy8qrOmoStr8Sz2PuWgWVHfRhIIcn858dxz9Auprs8cFaSqlZS2ynIy33EsasSaFmCb95X1mMaifiNi3GHwJDdpCc9AOXV2EGEhkbgug5MaEgkxg1n22v3F4ciTIdWrl258HUVCoVVOs64tEQ69B1n0TRBP18mRJNnY+bsXkYJ9/Jb+Mc9xz2NhmHFZ+K9IC5z2ds1PTRgzLOV3fviyplflWxME6yK+FDKilhDqAbwzaVpLYE8n4SfMgBkrx1M9Y4ZpCHj+x4mJ9jTGwHhYta+un9H5LYyxZGewfcJ0oOqGR8kOvVtrnPYkCgfMT9vA0gNSezVg60kcnLtZ2YYe/H5xlJbg1GmLwOxq0Gpa196E2IYGvMNEfOHkiShhme2FQ3iptYnzDqvccXVZ4/PHoIM7Y1z/FsRJXMjmFZAwUFLgxhanylrPcoWd/N98VubZKvm5leOrpyPhqGiczKMTBuBWXtNaEoW25cj85P7D+zZ9jcFkMoOgGQv/wZ8zKeK5/BS0on2526dN085fMbvbmZJoKktxNJaj/dsRdLOtzQ8drqz0jAmPVt8ErWL4pYBUBNCjSf1N40EMykJpt26vyvEwN05Q+LFU37XjM=
