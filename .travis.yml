@@ -12,13 +12,13 @@ cache:
 script:
 - cd am-lib && ./gradlew build
 deploy:
-- provider: script
-  script: "./gradlew bintrayUpload"
-  skip_cleanup: true
-  dry_run: true
-  on:
-    all_branches: true
-    repo: hmcts/am-lib
+#- provider: script
+#  script: "./gradlew bintrayUpload"
+#  skip_cleanup: true
+#  dry_run: true
+#  on:
+#    all_branches: true
+#    repo: hmcts/am-lib
 - provider: releases
   skip_cleanup: true
   api_key:
