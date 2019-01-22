@@ -13,6 +13,7 @@ plugins {
 
 group = 'uk.gov.hmcts.reform'
 version = '0.0.1'
+def amLibJarVersion = '0.0.3'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -156,8 +157,8 @@ dependencies {
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: versions.springBoot
-  compile files('am-lib-0.0.1.jar')
-  testCompile files('am-lib-0.0.1.jar')
+  compile files("am-lib-${amLibJarVersion}.jar")
+  testCompile files("am-lib-${amLibJarVersion}.jar")
 
   compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
 
@@ -206,7 +207,7 @@ task copyLib(type:Exec) {
   workingDir '.'
 
   //on linux
-  commandLine 'cp', './am-lib/build/libs/am-lib-0.0.1.jar', '.'
+  commandLine 'cp', "./am-lib/build/libs/am-lib-${amLibJarVersion}.jar", '.'
 
   //store the output instead of printing to the console:
   standardOutput = new ByteArrayOutputStream()
