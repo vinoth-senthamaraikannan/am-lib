@@ -17,4 +17,5 @@ sed -i '' "s|${CURRENT_VERSION}|${NEW_VERSION}|" $(find . -name "README.md" -o -
 git add $(find . -name "README.md" -o -name "gradle.properties" | xargs -n 1)
 git commit -m "Release ${NEW_VERSION}"
 
-echo -e "Version bumped\nPush your changes, send a PR and after merging create a release in github"
+echo -e "Version bumped\nPush your changes, send a PR and after merging run:"
+echo -e "git tag -a ${NEW_VERSION} -m \"Releasing version ${NEW_VERSION}\" "
