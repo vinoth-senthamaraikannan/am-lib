@@ -16,14 +16,17 @@ def component = "lib-test"
 
 withPipeline(type, product, component) {
 
+    env.TEST_URL = params.URL_TO_TEST
+    echo "Test url: $env.TEST_URL"
+
     echo env.CHANGE_TITLE
     if (env.CHANGE_TITLE && !env.CHANGE_TITLE.contains('[PREVIEW]')
             && env.CHANGE_TITLE.contains('[AKS]')) {
         setVaultName('am')
         enableDockerBuild()
         installCharts()
-        enablePerformanceTest()
     }
+    enablePerformanceTest()
 
     after('checkout') {
         echo 'am-lib-testing-service checked out'
