@@ -1,14 +1,9 @@
 # How to run Gatling locally
 ### Prerequisites
 
-#### Links
-- [Gatling](https://gatling.io/)
-- [Gatling-2.3.1-bundle](https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/2.3.1/gatling-charts-highcharts-bundle-2.3.1-bundle.zip)
-- [Gradle](https://gradle.org/)
-
 
 #### Gatling Setup
-1. Download and extract the Gatling-2.3.1-bundle (currently used version in pipeline)
+1. Download and extract the [Gatling-2.3.1-bundle](https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/2.3.1/gatling-charts-highcharts-bundle-2.3.1-bundle.zip) (currently used version in jenkins)
 2. Copy bin and lib directories into $project_dir/src/gatling
 
 #### IDE Setup
