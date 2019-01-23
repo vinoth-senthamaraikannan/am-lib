@@ -61,8 +61,8 @@ variable "jenkins_AAD_objectId" {
 }
 
 variable "product_group_object_id" {
-  default = "c9ab670f-8f92-4170-ba08-796ccab27751"
-  description = "dcd_snl_kv"
+  default = "3e235565-1054-4b83-86c1-318d05dd4342"
+  description = "dcd_group_accessmanagement_v2"
 }
 
 variable "deployment_namespace" {
