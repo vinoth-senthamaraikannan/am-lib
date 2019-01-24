@@ -3,9 +3,9 @@
 properties([
         // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
         pipelineTriggers([cron('H 05 * * *')]),
-        parameters([
-                string(name: 'URL_TO_TEST', defaultValue: 'changetoproperURL', description: 'The URL you want to run these tests against')
-        ])
+//        parameters([
+//                string(name: 'URL_TO_TEST', defaultValue: 'changetoproperURL', description: 'The URL you want to run these tests against')
+//        ])
 ])
 
 @Library("Infrastructure")
@@ -15,7 +15,7 @@ def product = "rpe" //sure should be rpe?
 def component = "lib-test"
 
 withNightlyPipeline(type, product, component) {
-    env.TEST_URL = params.URL_TO_TEST
+//    env.TEST_URL = params.URL_TO_TEST
     enableSlackNotifications('#rpe-build-notices') //sure should be rpe?
 
 //    enablePerformanceTest()
