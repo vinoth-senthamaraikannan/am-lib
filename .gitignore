@@ -4,6 +4,10 @@
 # Log file
 *.log
 
+# OSX files
+*.DS_Store
+
+
 # BlueJ files
 *.ctxt
 
@@ -31,3 +35,9 @@ out/
 
 !gradle/wrapper/gradle-wrapper.jar
 classes/
+
+# Gatling files
+/src/gatling/results/
+/src/gatling/bin/
+/src/gatling/lib/
+/src/gatling/target/

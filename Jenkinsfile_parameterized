@@ -9,7 +9,7 @@ withPipeline(type, product, component) {
     enableDbMigration()
     echo env.CHANGE_TITLE
     if (env.CHANGE_TITLE && !env.CHANGE_TITLE.contains('[PREVIEW]')
-        && env.CHANGE_TITLE.contains('[AKS]')) {
+            && env.CHANGE_TITLE.contains('[AKS]')) {
         setVaultName('am')
         enableDockerBuild()
         installCharts()
