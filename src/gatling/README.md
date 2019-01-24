@@ -8,7 +8,7 @@
 
 #### IDE Setup
 1. In intelliJ Right click the lib directory and select "Add as Library..."
-2. In intelliJ Right click the $project_dir/src/gatling/simulations/uk directory and mark it as Sources root
+2. In intelliJ Right click the $project_dir/src/gatling/simulations directory and mark it as Sources root
 
 ### Running
 1. Start the am-lib project with the dummy service running - for more info check the project's Readme
