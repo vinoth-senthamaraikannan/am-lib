@@ -11,7 +11,7 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "rpe" //sure should be rpe?
+def product = "rpe" //sure should be rpe??
 def component = "lib-test"
 
 withNightlyPipeline(type, product, component) {
