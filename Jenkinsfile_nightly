@@ -2,7 +2,7 @@
 
 properties([
         // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-        pipelineTriggers([cron('H 05 * * *')]),
+        pipelineTriggers([cron('H 05 * * *')])
 ])
 
 @Library("Infrastructure")
@@ -12,9 +12,6 @@ def product = "rpe"
 def component = "lib-test"
 
 withNightlyPipeline(type, product, component) {
+    enableDbMigration()
     enableSlackNotifications('#rpe-build-notices')
-
-    after('performanceTest') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/**/*'
-    }
 }
