@@ -24,9 +24,10 @@ withPipeline(type, product, component) {
         setVaultName('am')
         enableDockerBuild()
         installCharts()
-        echo "TEST URL: $env.TEST_URL"
-        enablePerformanceTest()
     }
+
+    echo "TEST URL: $env.TEST_URL"
+    enablePerformanceTest()
 
     after('checkout') {
         echo 'am-lib-testing-service checked out'
