@@ -22,7 +22,7 @@ class PipelineSimulation extends Simulation {
   ).maxDuration(20 seconds)
     .assertions(
       global.failedRequests.count.is(0),
-      global.responseTime.max.lt(5000),
+      global.responseTime.max.lt(500),
       global.responseTime.percentile3.lt(2000)
     )
 
