@@ -1,12 +1,12 @@
 #!groovy
 
-properties([
-        // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-        pipelineTriggers([cron('H 05 * * *')]),
-        parameters([
-                string(name: 'URL_TO_TEST', defaultValue: 'changetoproperURL', description: 'The URL you want to run these tests against')
-        ])
-])
+//properties([
+//        // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
+//        pipelineTriggers([cron('H 05 * * *')]),
+//        parameters([
+//                string(name: 'URL_TO_TEST', defaultValue: 'changetoproperURL', description: 'The URL you want to run these tests against')
+//        ])
+//])
 
 @Library("Infrastructure")
 
@@ -16,8 +16,6 @@ def component = "lib-test"
 
 withPipeline(type, product, component) {
 
-    env.TEST_URL = params.URL_TO_TEST
-
     echo env.CHANGE_TITLE
     if (env.CHANGE_TITLE && !env.CHANGE_TITLE.contains('[PREVIEW]')
             && env.CHANGE_TITLE.contains('[AKS]')) {
@@ -26,7 +24,9 @@ withPipeline(type, product, component) {
         installCharts()
     }
 
-    echo "TEST URL: $env.TEST_URL"
+    before('performancetest') {
+        echo "TEST URL: $env.TEST_URL"
+    }
     enablePerformanceTest()
 
     after('checkout') {
