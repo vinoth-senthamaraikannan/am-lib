@@ -91,7 +91,7 @@ publishing {
   publications {
     Main(MavenPublication) {
       from components.java
-      artifact sourcesJar
+      artifact shadowJar
       artifact javadocJar
       groupId project.group
       artifactId 'am-lib'
