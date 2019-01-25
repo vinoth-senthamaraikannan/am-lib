@@ -138,7 +138,7 @@ shadowJar {
 }
 
 artifacts {
-  archives sourcesJar
+  archives shadowJar
   archives javadocJar
   testOutput jarTest
 }
