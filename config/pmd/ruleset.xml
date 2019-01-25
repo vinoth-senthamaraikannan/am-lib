@@ -10,6 +10,11 @@
     <exclude name="GuardLogStatement" />
     <exclude name="JUnitTestContainsTooManyAsserts" />
   </rule>
+  <rule ref="category/java/bestpractices.xml/JUnitTestsShouldIncludeAssert">
+    <properties>
+      <property name="violationSuppressXPath" value="//ClassOrInterfaceType[@Image='RestAssuredTest']"/>
+    </properties>
+  </rule>
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor" />
     <exclude name="LocalVariableCouldBeFinal" />
