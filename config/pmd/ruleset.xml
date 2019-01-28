@@ -27,20 +27,18 @@
             <property name="xpath">
                 <value>
                     <![CDATA[
-//ClassOrInterfaceType[
-@Image='RestAssuredTest'
-]/../..
-//MarkerAnnotation/Name[
-@Image='Test'
-]/../../../MethodDeclaration[
-not(descendant::*[(starts-with(@Image, 'assert') or
-starts-with(@Image, 'Assert') or starts-with(@Image, 'then'))])
-]
-]]>
+                        //ClassOrInterfaceType[
+                            @Image='RestAssuredTest'
+                        ]/../..//MarkerAnnotation/Name[
+                            @Image='Test'
+                        ]/../../../MethodDeclaration[
+                            not(descendant::*[(starts-with(@Image, 'assert') or
+                                starts-with(@Image, 'Assert') or starts-with(@Image, 'then'))])
+                        ]
+                    ]]>
                 </value>
             </property>
         </properties>
-        <!--<example><![CDATA[]]></example>-->
     </rule>
     <rule ref="category/java/codestyle.xml">
         <exclude name="AtLeastOneConstructor"/>
