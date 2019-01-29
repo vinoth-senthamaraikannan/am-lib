@@ -152,7 +152,8 @@ def versions = [
   junit: '5.3.1',
   reformLogging: '3.0.2',
   springBoot: springBoot.class.package.implementationVersion,
-  springfoxSwagger: '2.9.2'
+  springfoxSwagger: '2.9.2',
+  flyway: '5.2.4'
 ]
 
 dependencies {
@@ -168,6 +169,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.2.RELEASE'
   compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+  compile group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
 
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
   testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
