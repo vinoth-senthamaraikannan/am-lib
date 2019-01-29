@@ -33,6 +33,7 @@ pmd {
   sourceSets = [sourceSets.main, sourceSets.test]
   reportsDir = file("$buildDir/reports/pmd/$project.name")
   ruleSetFiles = files("$projectDir/config/pmd/ruleset.xml")
+  ruleSets = []
 }
 
 sourceCompatibility = 1.8
@@ -45,11 +46,14 @@ repositories {
 
 dependencies {
   compile group: 'org.jdbi', name: 'jdbi3-core', version: '3.6.0'
+  compile group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.6.0'
   compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
   testCompile group: 'junit', name: 'junit', version: '4.12'
 
   testCompile group: 'org.mockito', name: 'mockito-core', version: '2.23.4'
   testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+  testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
+  testCompile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
 }
 
 dependencyUpdates.resolutionStrategy = {

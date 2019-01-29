@@ -98,6 +98,7 @@ pmd {
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functional, sourceSets.integrationTest]
   reportsDir = file("$project.buildDir/reports/pmd")
   ruleSetFiles = files("config/pmd/ruleset.xml")
+  ruleSets = []
 }
 
 jacocoTestReport {
@@ -117,7 +118,8 @@ sonarqube {
     property "sonar.projectKey", "uk.gov.hmcts.reform:am-lib-testing-service"
     property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
     property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
-
+    property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*"
+    property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*"
   }
 }
 
@@ -152,7 +154,8 @@ def versions = [
   junit: '5.3.1',
   reformLogging: '3.0.2',
   springBoot: springBoot.class.package.implementationVersion,
-  springfoxSwagger: '2.9.2'
+  springfoxSwagger: '2.9.2',
+  flyway: '5.2.4'
 ]
 
 dependencies {
@@ -168,6 +171,7 @@ dependencies {
   compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
   compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.2.RELEASE'
   compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+  compile group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
 
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
   testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
@@ -216,7 +220,7 @@ flyway {
   url = 'jdbc:postgresql://localhost:5433/am'
   user = 'amuser'
   password = 'ampass'
-  locations = ["filesystem:am-lib/src/main/java/uk/gov/hmcts/reform/amlib/db/migrations"]
+  locations = ["filesystem:am-lib/src/main/java/uk/gov/hmcts/reform/amlib/db/migration"]
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
