@@ -17,6 +17,12 @@ public class AccessManagementService {
         this.jdbi.installPlugin(new SqlObjectPlugin());
     }
 
+
+    /**
+     * @param resourceId
+     * @param accessorId
+     * @param explicitPermissions defines information about permissions given to the accessor
+     */
     public void createResourceAccess(String resourceId, String accessorId, ExplicitPermissions explicitPermissions) {
         List<Permissions> userPermissions = explicitPermissions.getUserPermissions();
 
