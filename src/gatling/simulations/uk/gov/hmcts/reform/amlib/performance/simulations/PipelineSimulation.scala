@@ -12,7 +12,7 @@ class PipelineSimulation extends Simulation {
   private val httpProtocol = http.baseURL(Environment.baseUrl)
 
   setUp(
-    BasicScenarios.getAccessorsList.inject(rampUsers(10).over(10.seconds))
+    BasicScenarios.helloWorld.inject(rampUsers(10).over(10.seconds))
       .protocols(httpProtocol)
   ).maxDuration(30.seconds)
     .assertions(
