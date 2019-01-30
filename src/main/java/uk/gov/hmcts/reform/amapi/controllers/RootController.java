@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.amlib.AccessManagementService;
+import uk.gov.hmcts.reform.amlib.enums.Permissions;
+import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -36,6 +39,11 @@ public class RootController {
 
     @PostMapping("/create-resource-access")
     public void createResourceAccess(@RequestBody Map<String, Object> amData) {
-        am.createResourceAccess(amData.get("resourceId").toString(), amData.get("accessorId").toString());
+        ExplicitPermissions explicitPermissions = new ExplicitPermissions(Arrays.asList(Permissions.CREATE,
+                Permissions.UPDATE));
+
+        am.createResourceAccess(amData.get("resourceId").toString(),
+                amData.get("accessorId").toString(),
+                explicitPermissions);
     }
 }
