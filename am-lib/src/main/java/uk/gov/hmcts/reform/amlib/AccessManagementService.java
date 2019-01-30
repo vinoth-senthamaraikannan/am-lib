@@ -20,6 +20,7 @@ public class AccessManagementService {
     }
 
     /**
+     * Returns void if method succeeds
      * @param resourceId
      * @param accessorId
      * @param explicitPermissions defines information about permissions given to the accessor
@@ -32,7 +33,7 @@ public class AccessManagementService {
     }
 
     /**
-     * Returns `resourceJSON` when record with userId and resourceId exist, otherwise null
+     * Returns `resourceJSON` when record with userId and resourceId exist and has READ permissions, otherwise null
      * @param userId (accessorId)
      * @param resourceId
      * @param resourceJSON
@@ -42,12 +43,13 @@ public class AccessManagementService {
         AccessManagement accessRegardlessPermissions = jdbi.withExtension(AccessManagementRepository.class,
                 dao -> dao.getExplicitAccess(userId, resourceId));
 
-        if(accessRegardlessPermissions == null) {
+        if (accessRegardlessPermissions == null) {
             return null;
         }
 
-        boolean hasAccess = (accessRegardlessPermissions.getPermissions() & Permissions.READ.getValue()) == Permissions.READ.getValue();
+        boolean hasReadPermissions = (accessRegardlessPermissions.getPermissions() & Permissions.READ.getValue())
+                == Permissions.READ.getValue();
 
-        return (hasAccess) ? resourceJSON : null;
+        return (hasReadPermissions) ? resourceJSON : null;
     }
 }

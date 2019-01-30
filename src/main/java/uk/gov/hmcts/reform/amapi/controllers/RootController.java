@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.amlib.AccessManagementService;
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
 import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -40,10 +40,15 @@ public class RootController {
         return ok("Welcome to AM Lib Testing Service!");
     }
 
+    @SuppressWarnings("unchecked") // supressing compiler warning about casting from Object to List<String>
     @PostMapping("/create-resource-access")
     public void createResourceAccess(@RequestBody Map<String, Object> amData) {
-        ExplicitPermissions explicitPermissions = new ExplicitPermissions(Arrays.asList(Permissions.CREATE,
-                Permissions.UPDATE));
+        List<String> rawExplicitPermissions = (List<String>) amData.get("explicitPermissions");
+        Permissions[] permissions = rawExplicitPermissions.stream()
+                .map(ep -> Permissions.valueOf(ep))
+                .toArray(Permissions[]::new);
+
+        ExplicitPermissions explicitPermissions = new ExplicitPermissions(permissions);
 
         am.createResourceAccess(amData.get("resourceId").toString(),
                 amData.get("accessorId").toString(),
