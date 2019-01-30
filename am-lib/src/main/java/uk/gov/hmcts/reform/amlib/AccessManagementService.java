@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
+import uk.gov.hmcts.reform.amlib.models.AccessManagement;
 import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 
@@ -17,7 +18,6 @@ public class AccessManagementService {
 
         this.jdbi.installPlugin(new SqlObjectPlugin());
     }
-
 
     /**
      * @param resourceId
@@ -39,8 +39,14 @@ public class AccessManagementService {
      * @return resourceJSON or null
      */
     public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJSON) {
-        boolean hasAccess = jdbi.withExtension(AccessManagementRepository.class,
-                dao -> dao.explicitAccessExist(userId, resourceId));
+        AccessManagement accessRegardlessPermissions = jdbi.withExtension(AccessManagementRepository.class,
+                dao -> dao.getExplicitAccess(userId, resourceId));
+
+        if(accessRegardlessPermissions == null) {
+            return null;
+        }
+
+        boolean hasAccess = (accessRegardlessPermissions.getPermissions() & Permissions.READ.getValue()) == Permissions.READ.getValue();
 
         return (hasAccess) ? resourceJSON : null;
     }

@@ -63,4 +63,18 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
         assertThat(result).isNull();
     }
+
+    @Test
+    public void filterResource_whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
+        String userId = "def";
+        ams.createResourceAccess(resourceId, userId,
+                new ExplicitPermissions(Permissions.CREATE, Permissions.UPDATE)
+        );
+        String nonExistingUserId = "ijk";
+        String nonExistingResourceId = "lmn";
+
+        JsonNode result = ams.filterResource(nonExistingUserId, nonExistingResourceId, jsonObject);
+
+        assertThat(result).isNull();
+    }
 }
