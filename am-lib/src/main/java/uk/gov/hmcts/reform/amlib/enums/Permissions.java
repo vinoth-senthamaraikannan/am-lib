@@ -7,6 +7,7 @@ public enum Permissions {
     CREATE(1),
     READ(2),
     UPDATE(4),
+    SHARE(8),
     DELETE(16)
     ;
 

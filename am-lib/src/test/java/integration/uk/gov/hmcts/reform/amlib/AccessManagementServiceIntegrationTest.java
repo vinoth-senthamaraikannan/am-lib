@@ -4,8 +4,6 @@ import org.junit.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
 import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -17,9 +15,12 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
     @Test
     public void whenCreatingResourceAccess_ResourceAccessAppearsInDatabase() {
         resourceId = UUID.randomUUID().toString();
-        List<Permissions> permissions = Arrays.asList(Permissions.CREATE, Permissions.READ, Permissions.UPDATE);
 
-        ams.createResourceAccess(resourceId, "dsa", new ExplicitPermissions(permissions));
+        ams.createResourceAccess(
+                resourceId,
+                "dsa",
+                new ExplicitPermissions(Permissions.CREATE, Permissions.READ, Permissions.UPDATE)
+        );
 
         int count = jdbi.open().createQuery(
                 "select count(1) from \"AccessManagement\" where \"resourceId\" = ?")
