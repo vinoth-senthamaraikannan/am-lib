@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
@@ -28,5 +29,19 @@ public class AccessManagementService {
 
         jdbi.useExtension(AccessManagementRepository.class,
             dao -> dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions)));
+    }
+
+    /**
+     * Returns `resourceJSON` when record with userId and resourceId exist, otherwise null
+     * @param userId (accessorId)
+     * @param resourceId
+     * @param resourceJSON
+     * @return resourceJSON or null
+     */
+    public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJSON) {
+        boolean hasAccess = jdbi.withExtension(AccessManagementRepository.class,
+                dao -> dao.explicitAccessExist(userId, resourceId));
+
+        return (hasAccess) ? resourceJSON : null;
     }
 }

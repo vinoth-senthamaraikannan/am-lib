@@ -41,6 +41,7 @@ services:
       - AM_DB_NAME=am
       - AM_DB_USERNAME=amuser
       - AM_DB_PASSWORD=ampass
+      - ENABLE_DB_MIGRATE_IN_SERVICE=true
     ports:
       - 2704:2703
     networks:
