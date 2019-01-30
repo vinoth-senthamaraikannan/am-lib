@@ -1,9 +1,11 @@
-package uk.gov.hmcts.reform.amlib.performance.simulations
+package gov.hmcts.reform.amlib.performance.simulations
 
+import gov.hmcts.reform.amlib.performance.http.AccessManagement
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import scala.concurrent.duration._
 import uk.gov.hmcts.reform.amlib.performance.utils.Environment
+
+import scala.concurrent.duration._
 
 class PipelineSimulation extends Simulation {
 
@@ -11,15 +13,14 @@ class PipelineSimulation extends Simulation {
 
   val scn = scenario("Hello World")
     .forever(
-      exec(http("GET Hello World")
-        .get("/")
-        .check(status.is(200)))
+      exec(AccessManagement.helloWorld)
+        .pause(1.second)
     )
 
   setUp(
-    scn.inject(atOnceUsers(10))
+    scn.inject(rampUsers(10).over(10.seconds))
       .protocols(httpProtocol)
-  ).maxDuration(20 seconds)
+  ).maxDuration(30.seconds)
     .assertions(
       global.failedRequests.count.is(0)
     )
