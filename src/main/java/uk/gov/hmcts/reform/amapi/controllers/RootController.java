@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.amlib.AccessManagementService;
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
 import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +44,8 @@ public class RootController {
     @SuppressWarnings("unchecked") // supressing compiler warning about casting from Object to List<String>
     @PostMapping("/create-resource-access")
     public void createResourceAccess(@RequestBody Map<String, Object> amData) {
-        List<String> rawExplicitPermissions = (List<String>) amData.get("explicitPermissions");
+        LinkedHashMap<String, List> map = (LinkedHashMap) amData.get("explicitPermissions");
+        List<String> rawExplicitPermissions = map.get("userPermissions");
         Permissions[] permissions = rawExplicitPermissions.stream()
                 .map(ep -> Permissions.valueOf(ep))
                 .toArray(Permissions[]::new);
