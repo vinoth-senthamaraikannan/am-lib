@@ -6,10 +6,16 @@ import io.gatling.http.request.builder.HttpRequestBuilder
 
 object AccessManagement {
 
-  private def postRequest(url: String, body: String): HttpRequestBuilder =
+  private def postRequestWithStringBody(url: String, body: String): HttpRequestBuilder =
     http(url)
       .post(url)
       .body(StringBody(body)).asJSON
+      .check(status.is(200))
+
+  private def postRequestWithBody(url: String, body: String): HttpRequestBuilder =
+    http(url)
+      .post(url)
+      .body(ElFileBody(body)).asJSON
       .check(status.is(200))
 
   def helloWorld: HttpRequestBuilder =
@@ -18,11 +24,14 @@ object AccessManagement {
       .check(status.is(200))
 
   def createResourceAccess(body: String): HttpRequestBuilder =
-    postRequest("/create-resource-access", body)
+    postRequestWithStringBody("/create-resource-access", body)
+
+  def createResourceAssess: HttpRequestBuilder =
+    postRequestWithBody("/create-resource-access","createResourceAccess.json")
 
   def filterResource(body: String): HttpRequestBuilder =
-    postRequest("/filter-resource", body)
+    postRequestWithStringBody("/filter-resource", body)
 
   def getAccessorsList(body: String): HttpRequestBuilder =
-    postRequest("/get-accessors-list", body)
+    postRequestWithStringBody("/get-accessors-list", body)
 }
