@@ -1,0 +1,38 @@
+{
+	"info": {
+		"name": "am-lib-testing",
+		"_postman_id": "76c19111-7d09-a05a-583c-8ec144ee0601",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Resource Access",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"resourceId\": \"123\",\n\t\"accessorId\": \"SIGNOF\",\n\t\"explicitPermissions\": {\"userPermissions\": [\"CREATE\", \"UPDATE\", \"HIDE\", \"DELETE\"]}\n}"
+				},
+				"url": {
+					"raw": "localhost:2703/create-resource-access",
+					"host": [
+						"localhost"
+					],
+					"port": "2703",
+					"path": [
+						"create-resource-access"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

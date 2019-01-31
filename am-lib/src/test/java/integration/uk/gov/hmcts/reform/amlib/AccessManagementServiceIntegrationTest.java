@@ -70,10 +70,8 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
         ams.createResourceAccess(resourceId, userId,
                 new ExplicitPermissions(Permissions.CREATE, Permissions.UPDATE)
         );
-        String nonExistingUserId = "ijk";
-        String nonExistingResourceId = "lmn";
 
-        JsonNode result = ams.filterResource(nonExistingUserId, nonExistingResourceId, jsonObject);
+        JsonNode result = ams.filterResource(userId, resourceId, jsonObject);
 
         assertThat(result).isNull();
     }
