@@ -15,19 +15,18 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     private String resourceId;
     private final JsonNode jsonObject = JsonNodeFactory.instance.objectNode();
+    private ExplicitPermissions explicitReadCreateUpdatePermissions;
 
     @Before
     public void setupTest() {
         resourceId = UUID.randomUUID().toString();
+        explicitReadCreateUpdatePermissions = new ExplicitPermissions(Permissions.CREATE,
+                Permissions.READ, Permissions.UPDATE);
     }
 
     @Test
     public void createQuery_whenCreatingResourceAccess_ResourceAccessAppearsInDatabase() {
-        ams.createResourceAccess(
-                resourceId,
-                "dsa",
-                new ExplicitPermissions(Permissions.CREATE, Permissions.READ, Permissions.UPDATE)
-        );
+        ams.createResourceAccess(resourceId, "dsa", explicitReadCreateUpdatePermissions);
 
         int count = jdbi.open().createQuery(
                 "select count(1) from \"AccessManagement\" where \"resourceId\" = ?")
@@ -41,9 +40,7 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
     @Test
     public void filterResource_whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
         String userId = UUID.randomUUID().toString();
-        ams.createResourceAccess(resourceId, userId,
-                new ExplicitPermissions(Permissions.CREATE, Permissions.READ, Permissions.UPDATE)
-        );
+        ams.createResourceAccess(resourceId, userId, explicitReadCreateUpdatePermissions);
 
         JsonNode result = ams.filterResource(userId, resourceId, jsonObject);
 
@@ -53,9 +50,7 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
     @Test
     public void filterResource_whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
         String userId = "def";
-        ams.createResourceAccess(resourceId, userId,
-                new ExplicitPermissions(Permissions.CREATE, Permissions.READ, Permissions.UPDATE)
-        );
+        ams.createResourceAccess(resourceId, userId, explicitReadCreateUpdatePermissions);
         String nonExistingUserId = "ijk";
         String nonExistingResourceId = "lmn";
 
