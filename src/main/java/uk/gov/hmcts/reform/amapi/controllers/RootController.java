@@ -57,6 +57,11 @@ public class RootController {
                 explicitPermissions);
     }
 
+    @PostMapping("/get-accessors-list")
+    public List<String> getAccessorsList(@RequestBody Map<String, Object> amData) {
+        return am.getAccessorsList(amData.get("userId").toString(), amData.get("resourceId").toString());
+    }
+
     @PostMapping("/filter-resource")
     public JsonNode filterResource(@RequestBody Map<String, Object> amData) {
         JsonNode jsonNode = mapper.valueToTree(amData.get("resourceJson"));
