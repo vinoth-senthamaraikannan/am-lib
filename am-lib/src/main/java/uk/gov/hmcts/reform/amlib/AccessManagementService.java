@@ -49,9 +49,6 @@ public class AccessManagementService {
             return null;
         }
 
-        boolean hasReadPermissions = (explicitAccess.getPermissions() & Permissions.READ.getValue())
-                == Permissions.READ.getValue();
-
-        return hasReadPermissions ? resourceJson : null;
+        return Permissions.hasPermissionTo(explicitAccess.getPermissions(), Permissions.READ) ? resourceJson : null;
     }
 }

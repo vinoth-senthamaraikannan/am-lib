@@ -29,4 +29,8 @@ public enum Permissions {
 
         return sum;
     }
+
+    public static boolean hasPermissionTo(int permissions, Permissions permissionToCheck) {
+        return (permissions & permissionToCheck.getValue()) == permissionToCheck.getValue();
+    }
 }
