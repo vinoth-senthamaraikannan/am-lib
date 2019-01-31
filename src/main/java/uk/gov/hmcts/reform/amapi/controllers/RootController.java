@@ -44,9 +44,9 @@ public class RootController {
     @SuppressWarnings("unchecked") // supressing compiler warning about casting from Object to List<String>
     @PostMapping("/create-resource-access")
     public void createResourceAccess(@RequestBody Map<String, Object> amData) {
-        LinkedHashMap<String, List> map = (LinkedHashMap) amData.get("explicitPermissions");
-        List<String> rawExplicitPermissions = map.get("userPermissions");
-        Permissions[] permissions = rawExplicitPermissions.stream()
+        LinkedHashMap<String, List> rawExplicitPermissions = (LinkedHashMap) amData.get("explicitPermissions");
+        List<String> userPermissions = rawExplicitPermissions.get("userPermissions");
+        Permissions[] permissions = userPermissions.stream()
                 .map(ep -> Permissions.valueOf(ep))
                 .toArray(Permissions[]::new);
 

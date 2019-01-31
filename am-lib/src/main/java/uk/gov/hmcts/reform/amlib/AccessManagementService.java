@@ -40,14 +40,14 @@ public class AccessManagementService {
      * @return resourceJSON or null
      */
     public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJSON) {
-        AccessManagement accessRegardlessPermissions = jdbi.withExtension(AccessManagementRepository.class,
+        AccessManagement explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
                 dao -> dao.getExplicitAccess(userId, resourceId));
 
-        if (accessRegardlessPermissions == null) {
+        if (explicitAccess == null) {
             return null;
         }
 
-        boolean hasReadPermissions = (accessRegardlessPermissions.getPermissions() & Permissions.READ.getValue())
+        boolean hasReadPermissions = (explicitAccess.getPermissions() & Permissions.READ.getValue())
                 == Permissions.READ.getValue();
 
         return (hasReadPermissions) ? resourceJSON : null;
