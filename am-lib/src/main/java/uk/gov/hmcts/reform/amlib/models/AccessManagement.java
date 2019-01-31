@@ -4,10 +4,10 @@ import java.beans.ConstructorProperties;
 
 public class AccessManagement {
 
-    private int accessManagementId;
-    private String resourceId;
-    private String accessorId;
-    private int permissions;
+    private final int accessManagementId;
+    private final String resourceId;
+    private final String accessorId;
+    private final int permissions;
 
     @ConstructorProperties({"accessManagementId", "resourceId", "accessorId", "permissions"})
     public AccessManagement(int accessManagementId, String resourceId, String accessorId, int permissions) {
@@ -19,5 +19,17 @@ public class AccessManagement {
 
     public int getPermissions() {
         return permissions;
+    }
+
+    public int getAccessManagementId() {
+        return accessManagementId;
+    }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public String getAccessorId() {
+        return accessorId;
     }
 }

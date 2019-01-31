@@ -21,10 +21,10 @@ public enum Permissions {
         return value;
     }
 
-    public static int sumOf(List<Permissions> permissions) {
+    public static int sumOf(List<Permissions> perms) {
         int sum = 0;
 
-        for(Permissions permission: permissions) {
+        for (Permissions permission: perms) {
             sum += permission.getValue();
         }
 

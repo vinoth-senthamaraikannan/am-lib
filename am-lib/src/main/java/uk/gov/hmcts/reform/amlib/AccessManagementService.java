@@ -20,28 +20,30 @@ public class AccessManagementService {
     }
 
     /**
-     * Returns void if method succeeds
-     * @param resourceId
-     * @param accessorId
+     * Returns void if method succeeds.
+     * @param resourceId resource id
+     * @param accessorId accessor id
      * @param explicitPermissions defines information about permissions given to the accessor
      */
     public void createResourceAccess(String resourceId, String accessorId, ExplicitPermissions explicitPermissions) {
-        List<Permissions> userPermissions = explicitPermissions.getUserPermissions();
-
         jdbi.useExtension(AccessManagementRepository.class,
-            dao -> dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions)));
+            dao ->  {
+                List<Permissions> userPermissions = explicitPermissions.getUserPermissions();
+
+                dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions));
+            });
     }
 
     /**
-     * Returns `resourceJSON` when record with userId and resourceId exist and has READ permissions, otherwise null
+     * Returns `resourceJson` when record with userId and resourceId exist and has READ permissions, otherwise null.
      * @param userId (accessorId)
-     * @param resourceId
-     * @param resourceJSON
-     * @return resourceJSON or null
+     * @param resourceId resource id
+     * @param resourceJson json
+     * @return resourceJson or null
      */
-    public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJSON) {
+    public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJson) {
         AccessManagement explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
-                dao -> dao.getExplicitAccess(userId, resourceId));
+            dao -> dao.getExplicitAccess(userId, resourceId));
 
         if (explicitAccess == null) {
             return null;
@@ -50,6 +52,6 @@ public class AccessManagementService {
         boolean hasReadPermissions = (explicitAccess.getPermissions() & Permissions.READ.getValue())
                 == Permissions.READ.getValue();
 
-        return (hasReadPermissions) ? resourceJSON : null;
+        return hasReadPermissions ? resourceJson : null;
     }
 }

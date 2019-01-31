@@ -6,13 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ExplicitPermissions {
-    private List<Permissions> userPermissions;
+    private final List<Permissions> userPermissions;
 
     public ExplicitPermissions(List<Permissions> userPermissions) {
         this.userPermissions = userPermissions;
     }
 
-    public ExplicitPermissions(Permissions ...userPermissions) {
+    public ExplicitPermissions(Permissions...userPermissions) {
         this.userPermissions = Arrays.asList(userPermissions);
     }
 
