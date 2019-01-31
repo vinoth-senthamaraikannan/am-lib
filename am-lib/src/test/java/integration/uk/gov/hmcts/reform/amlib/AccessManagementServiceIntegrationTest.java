@@ -20,8 +20,9 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
     @Before
     public void setupTest() {
         resourceId = UUID.randomUUID().toString();
-        explicitReadCreateUpdatePermissions = new ExplicitPermissions(Permissions.CREATE,
-                Permissions.READ, Permissions.UPDATE);
+        explicitReadCreateUpdatePermissions = new ExplicitPermissions(
+                Permissions.CREATE, Permissions.READ, Permissions.UPDATE
+        );
     }
 
     @Test

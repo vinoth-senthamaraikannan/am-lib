@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.amlib.models.AccessManagement;
 import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 
-import java.util.List;
+import java.util.Set;
 
 public class AccessManagementService {
     private final Jdbi jdbi;
@@ -28,7 +28,7 @@ public class AccessManagementService {
     public void createResourceAccess(String resourceId, String accessorId, ExplicitPermissions explicitPermissions) {
         jdbi.useExtension(AccessManagementRepository.class,
             dao ->  {
-                List<Permissions> userPermissions = explicitPermissions.getUserPermissions();
+                Set<Permissions> userPermissions = explicitPermissions.getUserPermissions();
 
                 dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions));
             });

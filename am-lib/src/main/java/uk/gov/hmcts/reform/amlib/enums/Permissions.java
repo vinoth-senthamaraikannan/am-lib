@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.amlib.enums;
 
-import java.util.List;
+import java.util.Set;
 
 public enum Permissions {
     HIDE(0),
@@ -8,8 +8,7 @@ public enum Permissions {
     READ(2),
     UPDATE(4),
     SHARE(8),
-    DELETE(16)
-    ;
+    DELETE(16);
 
     private int value;
 
@@ -21,7 +20,7 @@ public enum Permissions {
         return value;
     }
 
-    public static int sumOf(List<Permissions> perms) {
+    public static int sumOf(Set<Permissions> perms) {
         int sum = 0;
 
         for (Permissions permission: perms) {
