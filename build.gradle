@@ -1,15 +1,15 @@
 plugins {
-  id 'application'
-  id 'checkstyle'
-  id 'pmd'
-  id 'java'
-  id 'jacoco'
-  id 'io.spring.dependency-management' version '1.0.6.RELEASE'
-  id 'org.springframework.boot' version '2.1.0.RELEASE'
-  id 'org.sonarqube' version '2.6.2'
-  id 'org.owasp.dependencycheck' version '4.0.2'
-  id 'com.github.ben-manes.versions' version '0.20.0'
-  id "org.flywaydb.flyway" version "5.2.4"
+    id 'application'
+    id 'checkstyle'
+    id 'pmd'
+    id 'java'
+    id 'jacoco'
+    id 'io.spring.dependency-management' version '1.0.6.RELEASE'
+    id 'org.springframework.boot' version '2.1.0.RELEASE'
+    id 'org.sonarqube' version '2.6.2'
+    id 'org.owasp.dependencycheck' version '4.0.2'
+    id 'com.github.ben-manes.versions' version '0.20.0'
+    id "org.flywaydb.flyway" version "5.2.4"
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -24,191 +24,191 @@ targetCompatibility = 1.8
 apply plugin: 'java'
 
 sourceSets {
-  test {
-    java.srcDir 'src/test/java'
-  }
-  functional {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/test/functional/java')
+    test {
+        java.srcDir 'src/test/java'
     }
-    resources.srcDir file('src/test/resources')
-  }
+    functional {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/test/functional/java')
+        }
+        resources.srcDir file('src/test/resources')
+    }
 
-  test {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/test/java')
+    test {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/test/java')
+        }
     }
-  }
 
-  integrationTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/integrationTest/java')
+    integrationTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
     }
-    resources.srcDir file('src/integrationTest/resources')
-  }
 }
 
 tasks.withType(JavaCompile) {
-  options.compilerArgs << "-Xlint:unchecked" << "-Werror"
+    options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
 
 task functional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
-  testClassesDirs = sourceSets.functional.output.classesDirs
-  classpath = sourceSets.functional.runtimeClasspath
+    testClassesDirs = sourceSets.functional.output.classesDirs
+    classpath = sourceSets.functional.runtimeClasspath
 }
 
 task integration(type: Test, description: 'Runs the integration tests.', group: 'Verification') {
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
 
-  // set your environment variables here
-  // environment("APPINSIGHTS_INSTRUMENTATIONKEY", "test-key")
+    // set your environment variables here
+    // environment("APPINSIGHTS_INSTRUMENTATIONKEY", "test-key")
 }
 
 configurations {
-  functionalCompile.extendsFrom testCompile
-  functionalRuntime.extendsFrom testRuntime
+    functionalCompile.extendsFrom testCompile
+    functionalRuntime.extendsFrom testRuntime
 }
 
 task smoke(type: Test) {
-  description = "Runs Smoke Tests"
-  testClassesDirs = sourceSets.functional.output.classesDirs
-  classpath = sourceSets.functional.runtimeClasspath
+    description = "Runs Smoke Tests"
+    testClassesDirs = sourceSets.functional.output.classesDirs
+    classpath = sourceSets.functional.runtimeClasspath
 
-  useJUnit {
-    includeCategories 'uk.gov.hmcts.reform.amapi.functional.SmokeTest'
-  }
+    useJUnit {
+        includeCategories 'uk.gov.hmcts.reform.amapi.functional.SmokeTest'
+    }
 }
 
 checkstyle {
-  maxWarnings = 0
-  toolVersion = '8.14'
-  // need to set configDir to rootDir otherwise submodule will use submodule/config/checkstyle
-  configDir = new File(rootDir, 'config/checkstyle')
+    maxWarnings = 0
+    toolVersion = '8.14'
+    // need to set configDir to rootDir otherwise submodule will use submodule/config/checkstyle
+    configDir = new File(rootDir, 'config/checkstyle')
 }
 
 pmd {
-  toolVersion = "6.9.0"
-  sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functional, sourceSets.integrationTest]
-  reportsDir = file("$project.buildDir/reports/pmd")
-  ruleSetFiles = files("config/pmd/ruleset.xml")
-  ruleSets = []
+    toolVersion = "6.9.0"
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functional, sourceSets.integrationTest]
+    reportsDir = file("$project.buildDir/reports/pmd")
+    ruleSetFiles = files("config/pmd/ruleset.xml")
+    ruleSets = []
 }
 
 jacocoTestReport {
-  executionData(test, integration)
-  reports {
-    xml.enabled = true
-    csv.enabled = false
-    xml.destination = file("${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml")
-  }
+    executionData(test, integration)
+    reports {
+        xml.enabled = true
+        csv.enabled = false
+        xml.destination = file("${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    }
 }
 
 project.tasks['sonarqube'].dependsOn test, integration
 
 sonarqube {
-  properties {
-    property "sonar.projectName", "Reform :: am-lib-testing-service"
-    property "sonar.projectKey", "uk.gov.hmcts.reform:am-lib-testing-service"
-    property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
-    property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
-    property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
-    property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
-  }
+    properties {
+        property "sonar.projectName", "Reform :: am-lib-testing-service"
+        property "sonar.projectKey", "uk.gov.hmcts.reform:am-lib-testing-service"
+        property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
+        property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
+        property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
+        property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
+    }
 }
 
 dependencyUpdates.resolutionStrategy = {
-  componentSelection { rules ->
-    rules.all { ComponentSelection selection ->
-      boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
-        selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
-      }
-      if (rejected) {
-        selection.reject('Release candidate')
-      }
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+            }
+            if (rejected) {
+                selection.reject('Release candidate')
+            }
+        }
     }
-  }
 }
 
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
-  // Specifies if the build should be failed if a CVSS score above a specified level is identified.
-  // range of 0-10 fails the build, anything greater and it doesn't fail the build
-  failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
-  suppressionFile = 'dependency-check-suppressions.xml'
+    // Specifies if the build should be failed if a CVSS score above a specified level is identified.
+    // range of 0-10 fails the build, anything greater and it doesn't fail the build
+    failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
+    suppressionFile = 'dependency-check-suppressions.xml'
 }
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-  junit: '5.3.1',
-  reformLogging: '3.0.2',
-  springBoot: springBoot.class.package.implementationVersion,
-  springfoxSwagger: '2.9.2',
-  flyway: '5.2.4'
+        junit           : '5.3.1',
+        reformLogging   : '3.0.2',
+        springBoot      : springBoot.class.package.implementationVersion,
+        springfoxSwagger: '2.9.2',
+        flyway          : '5.2.4'
 ]
 
 dependencies {
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
-  compile group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: versions.springBoot
-  compile files(amLibJarName)
-  testCompile files(amLibJarName)
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: versions.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: versions.springBoot
+    compile files(amLibJarName)
+    testCompile files(amLibJarName)
 
-  compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
 
-  compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.2.RELEASE'
-  compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
-  compile group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
+    compile group: 'uk.gov.hmcts.reform', name: 'java-logging', version: versions.reformLogging
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.0.2.RELEASE'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+    compile group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
 
-  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
-  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
-  testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit
-  testCompile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit
+    testCompile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
 
-  testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
 
-  integrationTestCompile sourceSets.main.runtimeClasspath
-  integrationTestCompile sourceSets.test.runtimeClasspath
+    integrationTestCompile sourceSets.main.runtimeClasspath
+    integrationTestCompile sourceSets.test.runtimeClasspath
 
-  functionalCompile sourceSets.main.runtimeClasspath
+    functionalCompile sourceSets.main.runtimeClasspath
 }
 
 mainClassName = 'uk.gov.hmcts.reform.amapi.Application'
 
 bootJar {
-  archiveName = 'am-lib-testing-service.jar'
+    archiveName = 'am-lib-testing-service.jar'
 
-  manifest {
-    attributes('Implementation-Version': project.version.toString())
-  }
+    manifest {
+        attributes('Implementation-Version': project.version.toString())
+    }
 }
 
-task testLib(type:Exec) {
-  workingDir './am-lib'
-  commandLine './gradlew', 'test'
+task testLib(type: Exec) {
+    workingDir './am-lib'
+    commandLine './gradlew', 'test'
 }
 
-task buildLib(type:Exec) {
-  workingDir './am-lib'
-  commandLine './gradlew', 'build', 'shadowJar'
+task buildLib(type: Exec) {
+    workingDir './am-lib'
+    commandLine './gradlew', 'build', 'shadowJar'
 }
 
-task copyLib(type:Exec) {
-  workingDir '.'
-  commandLine 'cp', "./am-lib/build/libs/${amLibJarName}", '.'
+task copyLib(type: Exec) {
+    workingDir '.'
+    commandLine 'cp', "./am-lib/build/libs/${amLibJarName}", '.'
 }
 
 test.dependsOn testLib
@@ -217,15 +217,15 @@ copyLib.dependsOn buildLib
 
 //local flyway settings
 flyway {
-  url = 'jdbc:postgresql://localhost:5433/am'
-  user = 'amuser'
-  password = 'ampass'
-  locations = ["filesystem:am-lib/src/main/java/uk/gov/hmcts/reform/amlib/db/migration"]
+    url = 'jdbc:postgresql://localhost:5433/am'
+    user = 'amuser'
+    password = 'ampass'
+    locations = ["filesystem:am-lib/src/main/java/uk/gov/hmcts/reform/amlib/db/migration"]
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-  baselineOnMigrate = true
-  if (project.hasProperty("dburl")) {
-    url = "jdbc:postgresql://${dburl}"
-  }
+    baselineOnMigrate = true
+    if (project.hasProperty("dburl")) {
+        url = "jdbc:postgresql://${dburl}"
+    }
 }

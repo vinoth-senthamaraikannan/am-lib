@@ -1,8 +1,9 @@
 plugins {
-  id 'org.owasp.dependencycheck' version '3.1.2'
-  id 'com.github.ben-manes.versions' version '0.17.0'
-  id 'com.jfrog.bintray' version '1.8.4'
-  id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'org.owasp.dependencycheck' version '3.1.2'
+    id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'info.solidsoft.pitest' version '1.4.0'
 }
 
 group 'uk.gov.hmcts.reform'
@@ -18,132 +19,167 @@ apply plugin: 'jacoco'
 apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'pmd'
 
+sourceSets {
+    test {
+        java.srcDir 'src/test/java'
+    }
+    test {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/test/java')
+        }
+    }
+
+    integrationTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/test/java/integration')
+        }
+//        resources.srcDir file('src/test/java/integration/resources')
+    }
+}
+
 configurations {
-  testOutput.extendsFrom (testCompile)
+    testOutput.extendsFrom(testCompile)
+}
+
+pitest {
+    targetTests = ['integration.uk.gov.hmcts.reform.amlib.*']
+    excludedClasses = ['uk.gov.hmcts.reform.amlib.models.*']
+    testSourceSets = [sourceSets.test, sourceSets.integrationTest]
+    threads = 4
+    outputFormats = ['XML', 'HTML']
+    timestampedReports = false
+    verbose = true
 }
 
 checkstyle {
-  toolVersion = '8.9'
-  maxWarnings = 0
-  configDir = new File("config/checkstyle")
+    toolVersion = '8.9'
+    maxWarnings = 0
+    configDir = new File("config/checkstyle")
 }
 
 pmd {
-  toolVersion = "6.9.0"
-  sourceSets = [sourceSets.main, sourceSets.test]
-  reportsDir = file("$buildDir/reports/pmd/$project.name")
-  ruleSetFiles = files("$projectDir/config/pmd/ruleset.xml")
-  ruleSets = []
+    toolVersion = "6.9.0"
+    sourceSets = [sourceSets.main, sourceSets.test]
+    reportsDir = file("$buildDir/reports/pmd/$project.name")
+    ruleSetFiles = files("$projectDir/config/pmd/ruleset.xml")
+    ruleSets = []
 }
 
 sourceCompatibility = 1.8
 
 repositories {
-  mavenLocal()
-  mavenCentral()
-  jcenter()
+    mavenLocal()
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-  compile group: 'org.jdbi', name: 'jdbi3-core', version: '3.6.0'
-  compile group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.6.0'
-  compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
-  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
-  
-  testCompile group: 'junit', name: 'junit', version: '4.12'
-  testCompile group: 'org.mockito', name: 'mockito-core', version: '2.23.4'
-  testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
-  testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
-  testCompile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
+    compile group: 'org.jdbi', name: 'jdbi3-core', version: '3.6.0'
+    compile group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.6.0'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.23.4'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+    testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
+    testCompile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
+
+    integrationTestCompile sourceSets.main.runtimeClasspath
+    integrationTestCompile sourceSets.test.runtimeClasspath
 }
 
 dependencyUpdates.resolutionStrategy = {
-  componentSelection { rules ->
-    rules.all { ComponentSelection selection ->
-      boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
-        selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
-      }
-      if (rejected) {
-        selection.reject('Release candidate')
-      }
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+            }
+            if (rejected) {
+                selection.reject('Release candidate')
+            }
+        }
     }
-  }
 }
 
 dependencyCheck {
-  // Specifies if the build should be failed if a CVSS score above a specified level is identified.
-  // range of 0-10 fails the build, anything greater and it doesn't fail the build
-  failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
-  suppressionFile = "$rootDir/config/owasp/suppressions.xml"
+    // Specifies if the build should be failed if a CVSS score above a specified level is identified.
+    // range of 0-10 fails the build, anything greater and it doesn't fail the build
+    failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
+    suppressionFile = "$rootDir/config/owasp/suppressions.xml"
 }
 
 task codeCoverageReport(type: JacocoReport, dependsOn: test) {
 
-  // Gather execution data from all subprojects
-  // (change this if you e.g. want to calculate unit test/integration test coverage separately)
-  executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+    // Gather execution data from all subprojects
+    // (change this if you e.g. want to calculate unit test/integration test coverage separately)
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
-  reports {
-    csv.enabled = false
-    html.enabled = true
-    html.destination = file("${buildDir}/reports/jacoco/html")
-    xml.enabled = true
-    xml.destination = file("${buildDir}/reports/jacoco/jacocoTestReport.xml")
-  }
+    reports {
+        csv.enabled = false
+        html.enabled = true
+        html.destination = file("${buildDir}/reports/jacoco/html")
+        xml.enabled = true
+        xml.destination = file("${buildDir}/reports/jacoco/jacocoTestReport.xml")
+    }
 }
 
 publishing {
-  publications {
-    Main(MavenPublication) {
-      from components.java
-      artifact shadowJar
-      artifact javadocJar
-      groupId project.group
-      artifactId 'am-lib'
-      version project.version
+    publications {
+        Main(MavenPublication) {
+            from components.java
+            artifact shadowJar
+            artifact javadocJar
+            groupId project.group
+            artifactId 'am-lib'
+            version project.version
+        }
     }
-  }
 }
 
 bintray {
-  user = System.getenv('BINTRAY_USER')
-  key = System.getenv('BINTRAY_KEY')
-  publications = ['Main']
-  publish = true
-  pkg {
-    repo = 'hmcts-maven'
-    name = 'am-lib'
-    userOrg = 'hmcts'
-    licenses = ['MIT']
-    vcsUrl = 'https://github.com/hmcts/am-lib'
-    version {
-      name = project.version
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['Main']
+    publish = true
+    pkg {
+        repo = 'hmcts-maven'
+        name = 'am-lib'
+        userOrg = 'hmcts'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/hmcts/am-lib'
+        version {
+            name = project.version
+        }
     }
-  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
-task jarTest (type: Jar, dependsOn: testClasses) {
-  from sourceSets.test.output
+task jarTest(type: Jar, dependsOn: testClasses) {
+    from sourceSets.test.output
 }
 
 shadowJar {
-  from('src/main/java') {
-    include '**/*.sql'
-  }
+    from('src/main/java') {
+        include '**/*.sql'
+    }
 }
 
 artifacts {
-  archives shadowJar
-  archives javadocJar
-  testOutput jarTest
+    archives shadowJar
+    archives javadocJar
+    testOutput jarTest
 }
