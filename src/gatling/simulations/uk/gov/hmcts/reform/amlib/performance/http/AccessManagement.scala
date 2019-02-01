@@ -8,7 +8,7 @@ object AccessManagement {
 
   private def postRequest(url: String, body: String): HttpRequestBuilder =
     http(url)
-      .post(url)
+      .post("/lib" + url)
       .body(ElFileBody(body)).asJSON
       .check(status.is(200))
 

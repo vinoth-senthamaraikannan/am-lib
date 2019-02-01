@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.Before;
 import org.junit.Test;
+import uk.gov.hmcts.reform.amlib.enums.Permissions;
+import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,15 +19,19 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
     private static final String OTHER_ACCESSOR_ID = "b";
 
     private final JsonNode jsonObject = JsonNodeFactory.instance.objectNode();
+    private ExplicitPermissions explicitReadCreateUpdatePermissions;
 
     @Before
     public void setupTest() {
         resourceId = UUID.randomUUID().toString();
+        explicitReadCreateUpdatePermissions = new ExplicitPermissions(
+                Permissions.CREATE, Permissions.READ, Permissions.UPDATE
+        );
     }
 
     @Test
     public void createQuery_whenCreatingResourceAccess_ResourceAccessAppearsInDatabase() {
-        ams.createResourceAccess(resourceId, "dsa");
+        ams.createResourceAccess(resourceId, "dsa", explicitReadCreateUpdatePermissions);
 
         int count = jdbi.open().createQuery(
                 "select count(1) from \"AccessManagement\" where \"resourceId\" = ?")
@@ -38,8 +44,8 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     @Test
     public void whenCheckingAccess_ifUserHasAccess_ShouldReturnUserIds() {
-        ams.createResourceAccess(resourceId, ACCESSOR_ID);
-        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID);
+        ams.createResourceAccess(resourceId, ACCESSOR_ID, explicitReadCreateUpdatePermissions);
+        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID, explicitReadCreateUpdatePermissions);
 
         List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
 
@@ -48,9 +54,9 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     @Test
     public void whenCheckingAccess_ifUserHasNoAccess_ShouldReturnNull() {
-        ams.createResourceAccess(resourceId, "c");
-        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID);
-        ams.createResourceAccess("otherResourceId", ACCESSOR_ID);
+        ams.createResourceAccess(resourceId, "c", explicitReadCreateUpdatePermissions);
+        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID, explicitReadCreateUpdatePermissions);
+        ams.createResourceAccess("otherResourceId", ACCESSOR_ID, explicitReadCreateUpdatePermissions);
 
         List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
 
@@ -59,8 +65,8 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     @Test
     public void whenCheckingAccess_ToNonExistingResource_ShouldReturnNull() {
-        ams.createResourceAccess(resourceId, ACCESSOR_ID);
-        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID);
+        ams.createResourceAccess(resourceId, ACCESSOR_ID, explicitReadCreateUpdatePermissions);
+        ams.createResourceAccess(resourceId, OTHER_ACCESSOR_ID, explicitReadCreateUpdatePermissions);
 
         String nonExistingResourceId = "bbbbbbbb";
 
@@ -71,7 +77,7 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     @Test
     public void filterResource_whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
-        ams.createResourceAccess(resourceId, ACCESSOR_ID);
+        ams.createResourceAccess(resourceId, ACCESSOR_ID, explicitReadCreateUpdatePermissions);
 
         JsonNode result = ams.filterResource(ACCESSOR_ID, resourceId, jsonObject);
 
@@ -80,11 +86,23 @@ public class AccessManagementServiceIntegrationTest extends IntegrationBaseTest 
 
     @Test
     public void filterResource_whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
-        ams.createResourceAccess(resourceId, ACCESSOR_ID);
+        ams.createResourceAccess(resourceId, ACCESSOR_ID, explicitReadCreateUpdatePermissions);
         String nonExistingUserId = "ijk";
         String nonExistingResourceId = "lmn";
 
         JsonNode result = ams.filterResource(nonExistingUserId, nonExistingResourceId, jsonObject);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    public void filterResource_whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
+        String userId = "def";
+        ams.createResourceAccess(resourceId, userId,
+                new ExplicitPermissions(Permissions.CREATE, Permissions.UPDATE)
+        );
+
+        JsonNode result = ams.filterResource(userId, resourceId, jsonObject);
 
         assertThat(result).isNull();
     }

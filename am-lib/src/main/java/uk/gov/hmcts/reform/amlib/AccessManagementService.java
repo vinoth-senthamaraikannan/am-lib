@@ -3,9 +3,14 @@ package uk.gov.hmcts.reform.amlib;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
+import uk.gov.hmcts.reform.amlib.enums.Permissions;
+import uk.gov.hmcts.reform.amlib.models.AccessManagement;
+import uk.gov.hmcts.reform.amlib.models.ExplicitPermissions;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 
 import java.util.List;
+
+import java.util.Set;
 
 public class AccessManagementService {
     private final Jdbi jdbi;
@@ -16,9 +21,19 @@ public class AccessManagementService {
         this.jdbi.installPlugin(new SqlObjectPlugin());
     }
 
-    public void createResourceAccess(String resourceId, String accessorId) {
+    /**
+     * Returns void if method succeeds.
+     * @param resourceId resource id
+     * @param accessorId accessor id
+     * @param explicitPermissions defines information about permissions given to the accessor
+     */
+    public void createResourceAccess(String resourceId, String accessorId, ExplicitPermissions explicitPermissions) {
         jdbi.useExtension(AccessManagementRepository.class,
-            dao -> dao.createAccessManagementRecord(resourceId, accessorId));
+            dao ->  {
+                Set<Permissions> userPermissions = explicitPermissions.getUserPermissions();
+
+                dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions));
+            });
     }
 
     /**
@@ -36,16 +51,20 @@ public class AccessManagementService {
     }
 
     /**
-     * Returns `resourceJson` when record with userId and resourceId exist, otherwise null.
+     * Returns `resourceJson` when record with userId and resourceId exist and has READ permissions, otherwise null.
      * @param userId (accessorId)
      * @param resourceId resource id
      * @param resourceJson json
      * @return resourceJson or null
      */
     public JsonNode filterResource(String userId, String resourceId, JsonNode resourceJson) {
-        boolean hasAccess = jdbi.withExtension(AccessManagementRepository.class,
-            dao -> dao.explicitAccessExist(userId, resourceId));
+        AccessManagement explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
+            dao -> dao.getExplicitAccess(userId, resourceId));
 
-        return hasAccess ? resourceJson : null;
+        if (explicitAccess == null) {
+            return null;
+        }
+
+        return Permissions.hasPermissionTo(explicitAccess.getPermissions(), Permissions.READ) ? resourceJson : null;
     }
 }

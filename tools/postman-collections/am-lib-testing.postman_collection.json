@@ -1,0 +1,39 @@
+{
+	"info": {
+		"name": "am-lib-testing",
+		"_postman_id": "76c19111-7d09-a05a-583c-8ec144ee0601",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Resource Access",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"resourceId\": \"123\",\n\t\"accessorId\": \"SIGNOF\",\n\t\"explicitPermissions\": {}\n}"
+				},
+				"url": {
+					"raw": "localhost:3703/lib/create-resource-access",
+					"host": [
+						"localhost"
+					],
+					"port": "3703",
+					"path": [
+						"lib",
+						"create-resource-access"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
