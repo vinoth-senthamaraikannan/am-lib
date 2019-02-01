@@ -1,4 +1,7 @@
 {
   "resourceId": "${resourceId}",
-  "accessorId": "${accessorId}"
+  "accessorId": "${accessorId}",
+  "explicitPermissions": {
+    "userPermissions": [ "CREATE", "READ", "UPDATE", "DELETE", "SHARE", "HIDE" ]
+  }
 }
