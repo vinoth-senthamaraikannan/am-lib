@@ -22,6 +22,8 @@ import java.util.Map;
 @RequestMapping("lib")
 public class AmLibProxyController {
 
+    private static final String RESOURCE_ID_KEY = "resourceId";
+
     @Autowired private ObjectMapper mapper;
     @Autowired private AccessManagementService am;
 
@@ -31,19 +33,19 @@ public class AmLibProxyController {
         LinkedHashMap<String, List> rawExplicitPermissions = (LinkedHashMap) amData.get("explicitPermissions");
         List<String> userPermissions = rawExplicitPermissions.get("userPermissions");
         Permissions[] permissions = userPermissions.stream()
-                .map(ep -> Permissions.valueOf(ep))
+                .map(Permissions::valueOf)
                 .toArray(Permissions[]::new);
 
         ExplicitPermissions explicitPermissions = new ExplicitPermissions(permissions);
 
-        am.createResourceAccess(amData.get("resourceId").toString(),
+        am.createResourceAccess(amData.get(RESOURCE_ID_KEY).toString(),
                 amData.get("accessorId").toString(),
                 explicitPermissions);
     }
 
     @PostMapping("/get-accessors-list")
     public List<String> getAccessorsList(@RequestBody Map<String, Object> amData) {
-        return am.getAccessorsList(amData.get("userId").toString(), amData.get("resourceId").toString());
+        return am.getAccessorsList(amData.get("userId").toString(), amData.get(RESOURCE_ID_KEY).toString());
     }
 
     @PostMapping("/filter-resource")
@@ -51,7 +53,7 @@ public class AmLibProxyController {
         JsonNode jsonNode = mapper.valueToTree(amData.get("resourceJson"));
         return am.filterResource(
             amData.get("userId").toString(),
-            amData.get("resourceId").toString(),
+            amData.get(RESOURCE_ID_KEY).toString(),
             jsonNode
         );
     }
