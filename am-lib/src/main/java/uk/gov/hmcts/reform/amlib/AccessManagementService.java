@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 
 import java.util.List;
 
+import java.util.Set;
+
 public class AccessManagementService {
     private final Jdbi jdbi;
 
@@ -28,10 +30,24 @@ public class AccessManagementService {
     public void createResourceAccess(String resourceId, String accessorId, ExplicitPermissions explicitPermissions) {
         jdbi.useExtension(AccessManagementRepository.class,
             dao ->  {
-                List<Permissions> userPermissions = explicitPermissions.getUserPermissions();
+                Set<Permissions> userPermissions = explicitPermissions.getUserPermissions();
 
                 dao.createAccessManagementRecord(resourceId, accessorId, Permissions.sumOf(userPermissions));
             });
+    }
+
+    /**
+     * Returns list of user ids who have access to resource or null if user has no access to this resource.
+     * @param userId (accessorId)
+     * @param resourceId resource Id
+     * @return List of user ids (accessor id) or null
+     */
+    public List<String> getAccessorsList(String userId, String resourceId) {
+        return jdbi.withExtension(AccessManagementRepository.class, dao -> {
+            List<String> userIds = dao.getAccessorsList(userId, resourceId);
+
+            return userIds.isEmpty() ? null : userIds;
+        });
     }
 
     /**
@@ -49,9 +65,6 @@ public class AccessManagementService {
             return null;
         }
 
-        boolean hasReadPermissions = (explicitAccess.getPermissions() & Permissions.READ.getValue())
-                == Permissions.READ.getValue();
-
-        return hasReadPermissions ? resourceJson : null;
+        return Permissions.hasPermissionTo(explicitAccess.getPermissions(), Permissions.READ) ? resourceJson : null;
     }
 }

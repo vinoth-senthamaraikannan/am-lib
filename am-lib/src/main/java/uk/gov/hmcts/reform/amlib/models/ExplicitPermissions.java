@@ -2,21 +2,23 @@ package uk.gov.hmcts.reform.amlib.models;
 
 import uk.gov.hmcts.reform.amlib.enums.Permissions;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExplicitPermissions {
-    private final List<Permissions> userPermissions;
+    private final Set<Permissions> userPermissions;
 
-    public ExplicitPermissions(List<Permissions> userPermissions) {
+    public ExplicitPermissions(Set<Permissions> userPermissions) {
         this.userPermissions = userPermissions;
     }
 
     public ExplicitPermissions(Permissions...userPermissions) {
-        this.userPermissions = Arrays.asList(userPermissions);
+        this.userPermissions = Collections.unmodifiableSet(Stream.of(userPermissions).collect(Collectors.toSet()));
     }
 
-    public List<Permissions> getUserPermissions() {
+    public Set<Permissions> getUserPermissions() {
         return userPermissions;
     }
 }

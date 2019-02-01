@@ -18,15 +18,16 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"resourceId\": \"123\",\n\t\"accessorId\": \"SIGNOF\",\n\t\"explicitPermissions\": {\"userPermissions\": [\"CREATE\", \"UPDATE\", \"HIDE\", \"DELETE\"]}\n}"
+					"raw": "{\n\t\"resourceId\": \"123\",\n\t\"accessorId\": \"SIGNOF\",\n\t\"explicitPermissions\": {}\n}"
 				},
 				"url": {
-					"raw": "localhost:2703/create-resource-access",
+					"raw": "localhost:3703/lib/create-resource-access",
 					"host": [
 						"localhost"
 					],
-					"port": "2703",
+					"port": "3703",
 					"path": [
+						"lib",
 						"create-resource-access"
 					]
 				},
