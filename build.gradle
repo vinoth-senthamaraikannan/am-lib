@@ -113,25 +113,14 @@ jacocoTestReport {
 project.tasks['sonarqube'].dependsOn test, integration
 
 sonarqube {
-<<<<<<< .merge_file_neU9SV
     properties {
         property "sonar.projectName", "Reform :: am-lib-testing-service"
         property "sonar.projectKey", "uk.gov.hmcts.reform:am-lib-testing-service"
         property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
         property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
-        property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
-        property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*RootController*"
+        property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*Controller*"
+        property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*Controller*"
     }
-=======
-  properties {
-    property "sonar.projectName", "Reform :: am-lib-testing-service"
-    property "sonar.projectKey", "uk.gov.hmcts.reform:am-lib-testing-service"
-    property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
-    property "sonar.jacoco.itReportPath", "${project.buildDir}/jacoco/integration.exec"
-    property "sonar.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*Controller*"
-    property "sonar.coverage.exclusions", "**/config/**,**/*FlywayMigrator*,**/*Application*,**/*Controller*"
-  }
->>>>>>> .merge_file_Knes3g
 }
 
 dependencyUpdates.resolutionStrategy = {
