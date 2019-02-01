@@ -37,7 +37,6 @@ sourceSets {
             runtimeClasspath += main.output
             srcDir file('src/test/java/integration')
         }
-//        resources.srcDir file('src/test/java/integration/resources')
     }
 }
 
@@ -52,7 +51,6 @@ pitest {
     threads = 4
     outputFormats = ['XML', 'HTML']
     timestampedReports = false
-    verbose = true
 }
 
 checkstyle {
