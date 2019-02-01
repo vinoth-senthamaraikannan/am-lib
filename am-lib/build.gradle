@@ -30,6 +30,7 @@ pitest {
     threads = 4
     outputFormats = ['XML', 'HTML']
     timestampedReports = false
+    mutationThreshold = 80
 }
 
 checkstyle {
