@@ -19,35 +19,14 @@ apply plugin: 'jacoco'
 apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'pmd'
 
-sourceSets {
-    test {
-        java.srcDir 'src/test/java'
-    }
-    test {
-        java {
-            compileClasspath += main.output
-            runtimeClasspath += main.output
-            srcDir file('src/test/java')
-        }
-    }
-
-    integrationTest {
-        java {
-            compileClasspath += main.output
-            runtimeClasspath += main.output
-            srcDir file('src/test/java/integration')
-        }
-    }
-}
-
 configurations {
     testOutput.extendsFrom(testCompile)
 }
 
 pitest {
     targetTests = ['integration.uk.gov.hmcts.reform.amlib.*']
+    excludedTestClasses = ['integration.uk.gov.hmcts.reform.amlib.IntegrationBaseTest']
     excludedClasses = ['uk.gov.hmcts.reform.amlib.models.*']
-    testSourceSets = [sourceSets.test, sourceSets.integrationTest]
     threads = 4
     outputFormats = ['XML', 'HTML']
     timestampedReports = false
@@ -86,9 +65,6 @@ dependencies {
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
     testCompile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
-
-    integrationTestCompile sourceSets.main.runtimeClasspath
-    integrationTestCompile sourceSets.test.runtimeClasspath
 }
 
 dependencyUpdates.resolutionStrategy = {

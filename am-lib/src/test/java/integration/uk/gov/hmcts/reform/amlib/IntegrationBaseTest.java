@@ -41,7 +41,7 @@ public abstract class IntegrationBaseTest {
         configuration.locations("filesystem:src/main/java/uk/gov/hmcts/reform/amlib/db/migration/");
         Flyway flyway = new Flyway(configuration);
         int noOfMigrations = flyway.migrate();
-//        assertThat(noOfMigrations).isGreaterThan(0);
+        assertThat(noOfMigrations).isGreaterThan(0);
     }
 
     private static void createBackup() {
