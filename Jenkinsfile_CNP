@@ -16,8 +16,6 @@ withPipeline(type, product, component) {
         installCharts()
     }
 
-//    enablePerformanceTest()
-
     after('checkout') {
         echo 'am-lib-testing-service checked out'
     }
