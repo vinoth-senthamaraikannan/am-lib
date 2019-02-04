@@ -201,6 +201,11 @@ task testLib(type: Exec) {
     commandLine './gradlew', 'test'
 }
 
+task pitest(type: Exec) {
+    workingDir './am-lib'
+    commandLine './gradlew', 'pitest', '--rerun-tasks'
+}
+
 task buildLib(type: Exec) {
     workingDir './am-lib'
     commandLine './gradlew', 'build', 'shadowJar'
