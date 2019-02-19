@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
@@ -79,21 +80,21 @@ public class AccessManagementService {
         }
 
         Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        Map<String, JsonNode> filteredResource = new ConcurrentHashMap<>();
 
         explicitAccess.forEach(explicitAccessRecord -> {
+            attributePermissions.put(explicitAccessRecord.getAttribute(),
+                Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
             if (READ.isGranted(explicitAccessRecord.getPermissions())) {
-                attributePermissions.put(explicitAccessRecord.getAttribute(),
-                    Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
 
-                //System.out.println(resourceJson.at(JsonPointer.valueOf(explicitAccessRecord.getAttribute()).head()));
+                filteredResource.put(explicitAccessRecord.getAttribute().replaceFirst("/", ""),
+                    resourceJson.at(JsonPointer.valueOf(explicitAccessRecord.getAttribute())));
             }
-                System.out.println(explicitAccessRecord.getAttribute());
         });
-
 
         return FilterResourceResponse.builder()
             .resourceId(resourceId)
-            .data(resourceJson)
+            .data(filteredResource)
             .permissions(attributePermissions)
             .build();
     }
