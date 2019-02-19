@@ -71,24 +71,30 @@ public class AccessManagementService {
      * @return resourceJson or null
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
-        ExplicitAccessRecord explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
+        List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
             dao -> dao.getExplicitAccess(userId, resourceId));
 
-        if (explicitAccess == null) {
+        if (explicitAccess.isEmpty()) {
             return null;
         }
 
-        if (READ.isGranted(explicitAccess.getPermissions())) {
-            Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-            attributePermissions.put("/", Permissions.fromSumOf(explicitAccess.getPermissions()));
+        Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
 
-            return FilterResourceResponse.builder()
-                    .resourceId(resourceId)
-                    .data(resourceJson)
-                    .permissions(attributePermissions)
-                    .build();
-        }
+        explicitAccess.forEach(explicitAccessRecord -> {
+            if (READ.isGranted(explicitAccessRecord.getPermissions())) {
+                attributePermissions.put(explicitAccessRecord.getAttribute(),
+                    Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
 
-        return null;
+                //System.out.println(resourceJson.at(JsonPointer.valueOf(explicitAccessRecord.getAttribute()).head()));
+            }
+                System.out.println(explicitAccessRecord.getAttribute());
+        });
+
+
+        return FilterResourceResponse.builder()
+            .resourceId(resourceId)
+            .data(resourceJson)
+            .permissions(attributePermissions)
+            .build();
     }
 }

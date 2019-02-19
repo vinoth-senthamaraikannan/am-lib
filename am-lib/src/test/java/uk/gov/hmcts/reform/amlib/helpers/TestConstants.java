@@ -23,6 +23,7 @@ public final class TestConstants {
     public static final String OTHER_ACCESSOR_ID = "b";
     public static final Set<Permission> EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS =
         Stream.of(CREATE, READ, UPDATE).collect(toSet());
+    public static final String ATTRIBUTE = "/test";
     public static final JsonNode DATA = JsonNodeFactory.instance.objectNode();
 
     private TestConstants() {

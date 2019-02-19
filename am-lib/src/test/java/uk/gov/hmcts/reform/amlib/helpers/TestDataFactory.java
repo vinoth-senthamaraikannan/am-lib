@@ -14,7 +14,8 @@ public final class TestDataFactory {
 
     public static ExplicitAccessRecord createRecord(String resourceId,
                                                     String accessorId,
-                                                    Set<Permission> explicitPermissions) {
+                                                    Set<Permission> explicitPermissions
+                                                    ) {
         return ExplicitAccessRecord.builder()
             .resourceId(resourceId)
             .accessorId(accessorId)
@@ -24,6 +25,23 @@ public final class TestDataFactory {
             .resourceType(TestConstants.RESOURCE_TYPE)
             .resourceName(TestConstants.RESOURCE_NAME)
             .attribute("")
+            .securityClassification(TestConstants.SECURITY_CLASSIFICATION)
+            .build();
+    }
+
+    public static ExplicitAccessRecord createAttributeRecord(String resourceId,
+                                                             String accessorId,
+                                                             Set<Permission> explicitPermissions,
+                                                             String attribute) {
+        return ExplicitAccessRecord.builder()
+            .resourceId(resourceId)
+            .accessorId(accessorId)
+            .explicitPermissions(explicitPermissions)
+            .accessType(TestConstants.ACCESS_TYPE)
+            .serviceName(TestConstants.SERVICE_NAME)
+            .resourceType(TestConstants.RESOURCE_TYPE)
+            .resourceName(TestConstants.RESOURCE_NAME)
+            .attribute(attribute)
             .securityClassification(TestConstants.SECURITY_CLASSIFICATION)
             .build();
     }
