@@ -4,6 +4,7 @@ import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
+import uk.gov.hmcts.reform.amlib.helpers.TestDataFactory;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 
 import java.util.Map;
@@ -20,7 +21,6 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ATTRIBUTE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.DATA;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createAttributeRecord;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
 public class FilterResourceIntegrationTest extends IntegrationBaseTest {
@@ -33,11 +33,11 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwo() {
+    public void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwo() {
         ams.createResourceAccess(
-            createAttributeRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
+            TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
         ams.createResourceAccess(
-            createAttributeRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/name"));
+            TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/name"));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
@@ -46,8 +46,8 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
-        ams.createResourceAccess(createAttributeRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
+    public void whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
+        ams.createResourceAccess(TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
@@ -62,7 +62,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
+    public void whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
         String nonExistingUserId = "ijk";
         String nonExistingResourceId = "lmn";
 
@@ -72,11 +72,11 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
+    public void whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, Stream.of(CREATE, UPDATE).collect(toSet())));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-//        assertThat(result).isNull();
+//      assertThat(result).isNull();
     }
 }

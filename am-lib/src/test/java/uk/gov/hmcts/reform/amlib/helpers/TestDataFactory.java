@@ -29,10 +29,10 @@ public final class TestDataFactory {
             .build();
     }
 
-    public static ExplicitAccessRecord createAttributeRecord(String resourceId,
-                                                             String accessorId,
-                                                             Set<Permission> explicitPermissions,
-                                                             String attribute) {
+    public static ExplicitAccessRecord createRecord(String resourceId,
+                                                    String accessorId,
+                                                    Set<Permission> explicitPermissions,
+                                                    String attribute) {
         return ExplicitAccessRecord.builder()
             .resourceId(resourceId)
             .accessorId(accessorId)
