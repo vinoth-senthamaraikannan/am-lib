@@ -1,8 +1,8 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 
@@ -21,17 +21,17 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.DATA;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
-public class FilterResourceIntegrationTest extends IntegrationBaseTest {
+class FilterResourceIntegrationTest extends IntegrationBaseTest {
 
     private String resourceId;
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         resourceId = UUID.randomUUID().toString();
     }
 
     @Test
-    public void filterResource_whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
+    void filterResource_whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
@@ -47,7 +47,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
+    void filterResource_whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
         String nonExistingUserId = "ijk";
         String nonExistingResourceId = "lmn";
 
@@ -57,7 +57,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void filterResource_whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
+    void filterResource_whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, Stream.of(CREATE, UPDATE).collect(toSet())));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);

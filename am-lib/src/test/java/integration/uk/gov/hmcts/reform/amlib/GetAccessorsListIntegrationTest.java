@@ -1,8 +1,8 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,17 +13,17 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREA
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.OTHER_ACCESSOR_ID;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
-public class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
+class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
     private String resourceId;
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         resourceId = UUID.randomUUID().toString();
     }
 
     @Test
-    public void whenCheckingAccess_ifUserHasAccess_ShouldReturnUserIds() {
+    void whenCheckingAccess_ifUserHasAccess_ShouldReturnUserIds() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
         ams.createResourceAccess(createRecord(resourceId, OTHER_ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
 
@@ -33,7 +33,7 @@ public class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenCheckingAccess_ifUserHasNoAccess_ShouldReturnNull() {
+    void whenCheckingAccess_ifUserHasNoAccess_ShouldReturnNull() {
         ams.createResourceAccess(createRecord(resourceId, OTHER_ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
 
         List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
@@ -42,7 +42,7 @@ public class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenCheckingAccess_ToNonExistingResource_ShouldReturnNull() {
+    void whenCheckingAccess_ToNonExistingResource_ShouldReturnNull() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
 
         String nonExistingResourceId = "bbbbbbbb";

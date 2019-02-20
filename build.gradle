@@ -1,3 +1,14 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  configurations.maybeCreate('pitest')
+  dependencies {
+    classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.0'
+    pitest 'org.pitest:pitest-junit5-plugin:0.8'
+  }
+}
+
 plugins {
     id 'application'
     id 'checkstyle'
@@ -13,6 +24,33 @@ plugins {
 subprojects {
     apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'com.github.ben-manes.versions'
+}
+
+project(":am-lib") {
+  apply plugin: 'info.solidsoft.pitest'
+
+  pitest {
+    pitestVersion = '1.4.5'
+    testPlugin = 'junit5'
+    targetClasses = [
+      'uk.gov.hmcts.reform.amlib.*'
+    ]
+    targetTests = [
+      'integration.uk.gov.hmcts.reform.amlib.*Test'
+    ]
+    excludedClasses = [
+      'uk.gov.hmcts.reform.amlib.models.*',
+      'uk.gov.hmcts.reform.amlib.helpers.TestConstants',
+      'uk.gov.hmcts.reform.amlib.helpers.TestDataFactory'
+    ]
+    excludedTestClasses = [
+      'integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest'
+    ]
+    threads = 4
+    outputFormats = ['XML', 'HTML']
+    timestampedReports = false
+    mutationThreshold = 80
+  }
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -79,8 +117,8 @@ task smoke(type: Test) {
     testClassesDirs = sourceSets.functional.output.classesDirs
     classpath = sourceSets.functional.runtimeClasspath
 
-    useJUnit {
-        includeCategories 'uk.gov.hmcts.reform.amapi.functional.SmokeTest'
+    useJUnitPlatform {
+        includeTags = ['SmokeTest']
     }
 }
 
@@ -136,7 +174,6 @@ repositories {
 // it is important to specify logback classic and core packages explicitly as libraries like spring boot
 // enforces it's own (older) version which is not recommended.
 def versions = [
-        junit           : '5.3.2',
         reformLogging   : '4.0.1',
         springBoot      : springBoot.class.package.implementationVersion,
         springfoxSwagger: '2.9.2',
@@ -158,17 +195,18 @@ dependencies {
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
     compile group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
 
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.4.0'
     testCompile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
 
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot
+    testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.springBoot) {
+        exclude group: 'junit', module: 'junit'
+    }
 
     integrationTestCompile sourceSets.main.runtimeClasspath
     integrationTestCompile sourceSets.test.runtimeClasspath
 
     functionalCompile sourceSets.main.runtimeClasspath
+    functionalCompile sourceSets.test.runtimeClasspath
 }
 
 mainClassName = 'uk.gov.hmcts.reform.amapi.Application'
@@ -186,11 +224,6 @@ task sonarqube(type: Exec) {
     commandLine './gradlew', 'sonarqube', '--rerun-tasks'
 }
 
-task pitest(type: Exec) {
-    workingDir './am-lib'
-    commandLine './gradlew', 'pitest', '--rerun-tasks'
-}
-
 //local flyway settings
 flyway {
     url = 'jdbc:postgresql://localhost:5433/am'
@@ -204,4 +237,16 @@ task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
     if (project.hasProperty("dburl")) {
         url = "jdbc:postgresql://${dburl}"
     }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+integration {
+    useJUnitPlatform()
+}
+
+functional {
+    useJUnitPlatform()
 }
