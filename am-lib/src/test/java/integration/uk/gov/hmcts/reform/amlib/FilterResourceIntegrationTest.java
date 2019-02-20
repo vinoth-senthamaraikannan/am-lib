@@ -3,8 +3,8 @@ package integration.uk.gov.hmcts.reform.amlib;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 
@@ -25,17 +25,17 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_EXPECTED_
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_KEY;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
-public class FilterResourceIntegrationTest extends IntegrationBaseTest {
+class FilterResourceIntegrationTest extends IntegrationBaseTest {
 
     private String resourceId;
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         resourceId = UUID.randomUUID().toString();
     }
 
     @Test
-    public void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwoAttributes() {
+    void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwoAttributes() {
         ams.createResourceAccess(
             createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, "/test"));
         ams.createResourceAccess(
@@ -48,7 +48,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenRowExistWithAccessorIdAndResourceId_ReturnPassedFilteredJsonObject() {
+    void whenRowExistWithAccessorIdAndResourceId_ReturnPassedFilteredJsonObject() {
         ams.createResourceAccess(createRecord(
             resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, RESOURCE_KEY));
 
@@ -68,7 +68,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
+    void whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {
         String nonExistingUserId = "ijk";
         String nonExistingResourceId = "lmn";
 
@@ -78,7 +78,7 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
+    void whenRowExistsAndDoesntHaveReadPermissions_ReturnNull() {
         ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, Stream.of(CREATE, UPDATE).collect(toSet())));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
