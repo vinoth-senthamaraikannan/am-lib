@@ -1,10 +1,11 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.databind.JsonNode;
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
-import uk.gov.hmcts.reform.amlib.helpers.TestDataFactory;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 
 import java.util.Map;
@@ -18,9 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.CREATE;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.UPDATE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ATTRIBUTE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.DATA;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_EXPECTED_KEY;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_KEY;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
 public class FilterResourceIntegrationTest extends IntegrationBaseTest {
@@ -33,32 +35,36 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    public void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwo() {
+    public void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwoAttributes() {
         ams.createResourceAccess(
-            TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
+            createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, "/test"));
         ams.createResourceAccess(
-            TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/name"));
+            createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, "/name"));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-        assertThat(result).toString().contains("/name");
-        assertThat(result).toString().contains("/test");
+        assertThat(result).toString().contains("test");
+        assertThat(result).toString().contains("name");
     }
 
     @Test
-    public void whenRowExistWithAccessorIdAndResourceId_ReturnPassedJsonObject() {
-        ams.createResourceAccess(TestDataFactory.createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS,"/test"));
+    public void whenRowExistWithAccessorIdAndResourceId_ReturnPassedFilteredJsonObject() {
+        ams.createResourceAccess(createRecord(
+            resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, RESOURCE_KEY));
+
+        Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        attributePermissions.put(RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
+
+        Map<String, JsonNode> filteredResource = new ConcurrentHashMap<>();
+        filteredResource.put(RESOURCE_EXPECTED_KEY, DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-        Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        attributePermissions.put(ATTRIBUTE, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
-
         assertThat(result).isEqualTo(FilterResourceResponse.builder()
-                .resourceId(resourceId)
-                .data(DATA)
-                .permissions(attributePermissions)
-                .build());
+            .resourceId(resourceId)
+            .data(filteredResource)
+            .permissions(attributePermissions)
+            .build());
     }
 
     @Test
@@ -77,6 +83,6 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-//      assertThat(result).isNull();
+        assertThat(result).isNull();
     }
 }

@@ -34,8 +34,6 @@ public interface AccessManagementRepository {
         + "and access_management.resource_id = :resourceId")
     List<String> getAccessorsList(@Bind("accessorId") String accessorId, @Bind("resourceId") String resourceId);
 
-    // The 'LIMIT 1' suffix was introduced because at the current database state (V2.2) there is a technical
-    // possibility of returning multiple records with this query, but it's forbidden from business point of view.
     @SqlQuery("select * from access_management where accessor_id=? and resource_id=?")
     @RegisterConstructorMapper(ExplicitAccessRecord.class)
     List<ExplicitAccessRecord> getExplicitAccess(String accessorId, String resourceId);

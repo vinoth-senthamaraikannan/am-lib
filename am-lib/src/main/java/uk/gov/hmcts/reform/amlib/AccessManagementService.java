@@ -69,7 +69,7 @@ public class AccessManagementService {
      * @param userId       (accessorId)
      * @param resourceId   resource id
      * @param resourceJson json
-     * @return resourceJson or null
+     * @return filtered resourceJson based on READ permissions or null if no READ permissions on resource
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
@@ -92,10 +92,13 @@ public class AccessManagementService {
             }
         });
 
-        return FilterResourceResponse.builder()
-            .resourceId(resourceId)
-            .data(filteredResource)
-            .permissions(attributePermissions)
-            .build();
+        if (!filteredResource.isEmpty()) {
+            return FilterResourceResponse.builder()
+                .resourceId(resourceId)
+                .data(filteredResource)
+                .permissions(attributePermissions)
+                .build();
+        }
+        return null;
     }
 }

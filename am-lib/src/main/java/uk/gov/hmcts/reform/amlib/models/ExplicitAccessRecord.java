@@ -15,7 +15,7 @@ public final class ExplicitAccessRecord extends AbstractAccessMetadata {
 
     private final Set<Permission> explicitPermissions;
 
-    @Builder // All args constructor is needs for builder. @SuperBuilder cannot be used because IDE does not support it
+    @Builder // All args constructor is needed for builder. @SuperBuilder cannot be used because IDE does not support it
     @SuppressWarnings("squid:S00107") // Having so many arguments seems reasonable solution here
     private ExplicitAccessRecord(String resourceId,
                                  String accessorId,
@@ -27,7 +27,7 @@ public final class ExplicitAccessRecord extends AbstractAccessMetadata {
                                  String securityClassification,
                                  Set<Permission> explicitPermissions) {
         super(resourceId, accessorId, accessType, serviceName, resourceType, resourceName, attribute,
-                securityClassification);
+            securityClassification);
         this.explicitPermissions = explicitPermissions;
     }
 
@@ -43,11 +43,10 @@ public final class ExplicitAccessRecord extends AbstractAccessMetadata {
                                 String attribute,
                                 String securityClassification) {
         this(resourceId, accessorId, accessType, serviceName, resourceType, resourceName, attribute,
-                securityClassification, Permissions.fromSumOf(permissions));
+            securityClassification, Permissions.fromSumOf(permissions));
     }
 
     public int getPermissions() {
         return Permissions.sumOf(explicitPermissions);
     }
-
 }
