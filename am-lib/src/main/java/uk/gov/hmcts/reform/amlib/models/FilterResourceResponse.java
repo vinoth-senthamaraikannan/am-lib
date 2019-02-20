@@ -12,6 +12,6 @@ import java.util.Set;
 @Builder
 public class FilterResourceResponse {
     private String resourceId;
-    private Map<String, JsonNode> data;
+    private JsonNode data;
     private Map<String, Set<Permission>> permissions;
 }

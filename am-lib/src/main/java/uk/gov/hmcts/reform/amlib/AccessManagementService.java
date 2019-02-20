@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
@@ -80,25 +82,25 @@ public class AccessManagementService {
         }
 
         Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        Map<String, JsonNode> filteredResource = new ConcurrentHashMap<>();
+        ObjectNode filteredResource = JsonNodeFactory.instance.objectNode();
 
         explicitAccess.forEach(explicitAccessRecord -> {
             attributePermissions.put(explicitAccessRecord.getAttribute(),
                 Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
             if (READ.isGranted(explicitAccessRecord.getPermissions())) {
-
-                filteredResource.put(explicitAccessRecord.getAttribute().replaceFirst("/", ""),
+                filteredResource.set(explicitAccessRecord.getAttribute().replaceFirst("/", ""),
                     resourceJson.at(JsonPointer.valueOf(explicitAccessRecord.getAttribute())));
             }
         });
 
-        if (!filteredResource.isEmpty()) {
+        if (filteredResource.toString().equals("{}")) {
+            return null;
+        } else {
             return FilterResourceResponse.builder()
                 .resourceId(resourceId)
                 .data(filteredResource)
                 .permissions(attributePermissions)
                 .build();
         }
-        return null;
     }
 }

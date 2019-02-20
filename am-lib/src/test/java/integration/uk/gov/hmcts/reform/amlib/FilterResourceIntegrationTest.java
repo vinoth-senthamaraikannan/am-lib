@@ -1,7 +1,8 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +56,8 @@ public class FilterResourceIntegrationTest extends IntegrationBaseTest {
         Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
         attributePermissions.put(RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
 
-        Map<String, JsonNode> filteredResource = new ConcurrentHashMap<>();
-        filteredResource.put(RESOURCE_EXPECTED_KEY, DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
+        ObjectNode filteredResource = JsonNodeFactory.instance.objectNode();
+        filteredResource.set(RESOURCE_EXPECTED_KEY, DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
