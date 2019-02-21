@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 import uk.gov.hmcts.reform.amlib.utils.Permissions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,34 +113,41 @@ public class AccessManagementService {
 
         Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
 
-        List<String> toKeep = new ArrayList<>();
+        //        List<String> toKeep = new ArrayList<>();
+
+        JsonNode resourceCopy = resourceJson.deepCopy();
 
         explicitAccess.forEach(explicitAccessRecord -> {
             attributePermissions.put(JsonPointer.valueOf(explicitAccessRecord.getAttribute()),
                 Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
+
             if (!READ.isGranted(explicitAccessRecord.getPermissions())) {
-                ((ObjectNode) resourceJson).remove(explicitAccessRecord.getAttribute().replaceFirst("/", ""));
+                String jsonPointer = explicitAccessRecord.getAttribute();
+                String path = jsonPointer.substring(0, jsonPointer.lastIndexOf('/'));
+                String fieldName = jsonPointer.substring(jsonPointer.lastIndexOf('/') + 1);
 
-                System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
-                System.out.println("resourceJsonAfterRemove = " + resourceJson);
-            } else {
-                String test = explicitAccessRecord.getAttribute().replaceFirst("/", "");
-                //                toKeep.add(test.substring(0, test.indexOf("/")).trim());
-                //                toKeep.add(test.substring(test.indexOf("/")+1).trim());
-                toKeep.add(test);
+                ((ObjectNode) resourceCopy.at(JsonPointer.valueOf(path))).remove(fieldName);
 
-                System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
-                System.out.println("toKeep = " + toKeep);
+                //System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
+                //System.out.println("resourceJsonAfterRemove = " + resourceCopy);
+                //} else {
+                //    String test = explicitAccessRecord.getAttribute().replaceFirst("/", "");
+                //    toKeep.add(test.substring(0, test.indexOf("/")).trim());
+                //    toKeep.add(test.substring(test.indexOf("/")+1).trim());
+                //    toKeep.add(test);
+
+                //    System.out.println("explicitAccessRecord.getAttribute()= " + explicitAccessRecord.getAttribute());
+                //    System.out.println("toKeep = " + toKeep);
             }
         });
 
-        ((ObjectNode) resourceJson).retain(toKeep);
+        //        ((ObjectNode) resourceJson).retain(toKeep);
 
-        System.out.println("resourceJsonAfterRetain = " + resourceJson);
+        //        System.out.println("resourceJsonAfterRetain = " + resourceJson);
 
         return FilterResourceResponse.builder()
             .resourceId(resourceId)
-            .data(resourceJson)
+            .data(resourceCopy)
             .permissions(attributePermissions)
             .build();
     }

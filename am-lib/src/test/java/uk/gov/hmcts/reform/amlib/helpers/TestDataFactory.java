@@ -22,17 +22,6 @@ public final class TestDataFactory {
         //NO-OP
     }
 
-    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
-                                                                  Set<Permission> permissions) {
-        return createGrantForWholeDocument(resourceId, ACCESSOR_ID, permissions);
-    }
-
-    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
-                                                                  String accessorId,
-                                                                  Set<Permission> permissions) {
-        return createGrant(resourceId, accessorId, createPermissionsForWholeDocument(permissions));
-    }
-
     public static ExplicitAccessGrant createGrant(String resourceId,
                                                   String accessorId,
                                                   Map<JsonPointer, Set<Permission>> attributePermissions) {
@@ -48,8 +37,9 @@ public final class TestDataFactory {
             .build();
     }
 
-    public static Map<JsonPointer, Set<Permission>> createPermissionsForWholeDocument(Set<Permission> permissions) {
-        return createPermissions("", permissions);
+    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
+                                                                  Set<Permission> permissions) {
+        return createGrant(resourceId, ACCESSOR_ID, createPermissions("", permissions));
     }
 
     public static Map<JsonPointer, Set<Permission>> createPermissions(String attribute,
