@@ -1,16 +1,16 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import integration.uk.gov.hmcts.reform.amlib.base.IntegrationBaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -32,17 +32,17 @@ class GrantAccessIntegrationTest extends IntegrationBaseTest {
 
     @Test
     void noAttributesShouldThrowException() {
-        Map<JsonPointer, Set<Permission>> emptyAttributePermissions = new ConcurrentHashMap<>();
+        Map<JsonPointer, Set<Permission>> noAttributes = ImmutableMap.of();
 
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
-            ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, emptyAttributePermissions)))
+            ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, noAttributes)))
             .withMessage("At least one attribute is required");
     }
 
     @Test
     @SuppressWarnings("PMD")
     void noPermissionsForAttributesShouldThrowException() {
-        Map<JsonPointer, Set<Permission>> attributeNoPermissions = createPermissionsForWholeDocument(new HashSet<>());
+        Map<JsonPointer, Set<Permission>> attributeNoPermissions = createPermissionsForWholeDocument(ImmutableSet.of());
 
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
             ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, attributeNoPermissions)))
@@ -58,11 +58,12 @@ class GrantAccessIntegrationTest extends IntegrationBaseTest {
 
     @Test
     void whenCreatingResourceAccessMultipleEntriesAppearInDatabase() {
-        Map<JsonPointer, Set<Permission>> multipleAttributePermissions = new ConcurrentHashMap<>();
-        multipleAttributePermissions.put(JsonPointer.valueOf(""), EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
-        multipleAttributePermissions.put(JsonPointer.valueOf("/name"), EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
+        Map<JsonPointer, Set<Permission>> multipleAttributes = ImmutableMap.<JsonPointer, Set<Permission>>builder()
+            .put(JsonPointer.valueOf(""), EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS)
+            .put(JsonPointer.valueOf("/name"), EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS)
+            .build();
 
-        ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, multipleAttributePermissions));
+        ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, multipleAttributes));
 
         assertThat(countResourcesById(resourceId)).isEqualTo(2);
     }

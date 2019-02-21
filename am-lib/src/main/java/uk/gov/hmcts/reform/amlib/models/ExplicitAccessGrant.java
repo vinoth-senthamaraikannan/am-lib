@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonPointer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 
 import java.util.Map;
@@ -20,6 +21,6 @@ public class ExplicitAccessGrant {
     private final String serviceName;
     private final String resourceType;
     private final String resourceName;
-    private final Map<JsonPointer, Set<Permission>> attributePermissions;
+    @Singular private final Map<JsonPointer, Set<Permission>> attributePermissions;
     private final String securityClassification;
 }

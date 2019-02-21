@@ -6,8 +6,6 @@ import uk.gov.hmcts.reform.amlib.exceptions.UnsupportedPermissionsException;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.amlib.enums.Permission.CREATE;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.DELETE;
@@ -32,7 +30,7 @@ public final class Permissions {
      * @see Permissions#sumOf(Set)
      */
     public static int sumOf(Permission... permissions) {
-        return sumOf(Stream.of(permissions).collect(Collectors.toSet()));
+        return sumOf(ImmutableSet.copyOf(permissions));
     }
 
     /**

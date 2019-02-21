@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 
 import java.util.Map;
@@ -14,5 +15,5 @@ import java.util.Set;
 public class FilterResourceResponse {
     private String resourceId;
     private JsonNode data;
-    private Map<JsonPointer, Set<Permission>> permissions;
+    @Singular private Map<JsonPointer, Set<Permission>> permissions;
 }

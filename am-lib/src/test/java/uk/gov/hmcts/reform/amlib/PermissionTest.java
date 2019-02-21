@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -7,10 +8,7 @@ import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.exceptions.UnsupportedPermissionsException;
 import uk.gov.hmcts.reform.amlib.utils.Permissions;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
@@ -38,14 +36,14 @@ class PermissionTest {
 
     @Test
     void sumOf_shouldCalculateSumOfPermissionsFromEmptySet() {
-        int sumOfPermissions = Permissions.sumOf(new HashSet<>());
+        int sumOfPermissions = Permissions.sumOf(ImmutableSet.of());
         assertThat(sumOfPermissions).isEqualTo(0);
     }
 
     @ParameterizedTest
     @MethodSource("createArguments")
     void sumOf_shouldCalculateSumOfPermissionsFromSet(Arguments args) {
-        int sumOfPermissions = Permissions.sumOf(Arrays.stream(args.permissions).collect(Collectors.toSet()));
+        int sumOfPermissions = Permissions.sumOf(ImmutableSet.copyOf(args.permissions));
         assertThat(sumOfPermissions).isEqualTo(args.sumOfPermissions);
     }
 

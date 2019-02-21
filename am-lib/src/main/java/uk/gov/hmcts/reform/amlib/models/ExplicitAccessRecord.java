@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.amlib.models;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Singular;
 import org.jdbi.v3.core.mapper.reflect.JdbiConstructor;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.utils.Permissions;
@@ -25,7 +26,7 @@ public final class ExplicitAccessRecord extends AbstractAccessMetadata {
                                  String resourceName,
                                  String attribute,
                                  String securityClassification,
-                                 Set<Permission> explicitPermissions) {
+                                 @Singular Set<Permission> explicitPermissions) {
         super(resourceId, accessorId, accessType, serviceName, resourceType, resourceName, attribute,
             securityClassification);
         this.explicitPermissions = explicitPermissions;
