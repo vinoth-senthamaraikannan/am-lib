@@ -111,9 +111,9 @@ public class AccessManagementService {
         }
 
         if (READ.isGranted(explicitAccess.getPermissions())) {
-            Map<JsonPointer, Set<Permission>> permissions = ImmutableMap.<JsonPointer, Set<Permission>>builder()
-                .put(JsonPointer.valueOf(""), Permissions.fromSumOf(explicitAccess.getPermissions()))
-                .build();
+            Map<JsonPointer, Set<Permission>> permissions = ImmutableMap.of(
+                JsonPointer.valueOf(""), Permissions.fromSumOf(explicitAccess.getPermissions())
+            );
 
             return FilterResourceResponse.builder()
                 .resourceId(resourceId)
