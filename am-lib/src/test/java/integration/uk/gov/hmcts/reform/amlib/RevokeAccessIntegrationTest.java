@@ -7,10 +7,9 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.READ_PERMISSION;
+import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrantForWholeDocument;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createMetadata;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
 
 class RevokeAccessIntegrationTest extends IntegrationBaseTest {
 
@@ -22,15 +21,15 @@ class RevokeAccessIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    void revokeResourceAccess_whenRevokingResourceAccess_ResourceAccessRemovedFromDatabase() {
-        ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
+    void whenRevokingResourceAccessResourceAccessRemovedFromDatabase() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, READ_PERMISSION));
         ams.revokeResourceAccess(createMetadata(resourceId));
 
         assertThat(countResourcesById(resourceId)).isEqualTo(0);
     }
 
     @Test
-    void revokeResourceAccess_whenRevokingResourceAccessThatDoesNotExist_NoErrorExpected() {
+    void whenRevokingResourceAccessThatDoesNotExistNoErrorExpected() {
         ams.revokeResourceAccess(createMetadata("4"));
 
         assertThat(countResourcesById(resourceId)).isEqualTo(0);
