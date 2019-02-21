@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib.utils;
 
+import com.google.common.collect.ImmutableSet;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.exceptions.UnsupportedPermissionsException;
 
@@ -61,6 +62,6 @@ public final class Permissions {
 
         return Arrays.stream(Permission.values())
             .filter(permission -> permission.isGranted(sumOfPermissions))
-            .collect(Collectors.toSet());
+            .collect(ImmutableSet.toImmutableSet());
     }
 }

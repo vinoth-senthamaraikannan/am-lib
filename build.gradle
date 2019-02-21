@@ -178,7 +178,7 @@ def versions = [
 ]
 
 dependencies {
-    compile project(':am-lib')
+    compile project(path: ':am-lib', configuration: 'shadow')
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.springBoot
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.springBoot

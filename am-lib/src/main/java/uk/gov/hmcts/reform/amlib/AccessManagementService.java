@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
@@ -16,7 +18,6 @@ import uk.gov.hmcts.reform.amlib.utils.Permissions;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 
@@ -88,7 +89,7 @@ public class AccessManagementService {
         return jdbi.withExtension(AccessManagementRepository.class, dao -> {
             List<String> userIds = dao.getAccessorsList(userId, resourceId);
 
-            return userIds.isEmpty() ? null : userIds;
+            return userIds.isEmpty() ? null : ImmutableList.copyOf(userIds);
         });
     }
 
@@ -110,13 +111,14 @@ public class AccessManagementService {
         }
 
         if (READ.isGranted(explicitAccess.getPermissions())) {
-            Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-            attributePermissions.put(JsonPointer.valueOf(""), Permissions.fromSumOf(explicitAccess.getPermissions()));
+            Map<JsonPointer, Set<Permission>> permissions = ImmutableMap.<JsonPointer, Set<Permission>>builder()
+                .put(JsonPointer.valueOf(""), Permissions.fromSumOf(explicitAccess.getPermissions()))
+                .build();
 
             return FilterResourceResponse.builder()
                 .resourceId(resourceId)
                 .data(resourceJson)
-                .permissions(attributePermissions)
+                .permissions(permissions)
                 .build();
         }
 
