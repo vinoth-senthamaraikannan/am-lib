@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib.models;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +14,5 @@ import java.util.Set;
 public class FilterResourceResponse {
     private String resourceId;
     private JsonNode data;
-    private Map<String, Set<Permission>> permissions;
+    private Map<JsonPointer, Set<Permission>> permissions;
 }

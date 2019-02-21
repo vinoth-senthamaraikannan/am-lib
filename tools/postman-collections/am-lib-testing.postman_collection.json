@@ -104,7 +104,7 @@
       "response": []
     },
     {
-      "name": "Create Resource Access",
+      "name": "Create Single Resource Access",
       "request": {
         "method": "POST",
         "header": [
@@ -115,7 +115,35 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"resourceId\": \"my-super-resource-id\",\n    \"accessorId\": \"UNIQUE-USER-ID\",\n    \"explicitPermissions\": [\"CREATE\", \"READ\", \"UPDATE\"],\n    \"accessType\": \"user\",\n    \"serviceName\": \"Service 1\",\n    \"resourceType\": \"Resource Type 1\",\n    \"resourceName\": \"resource\",\n    \"attribute\": \"\",\n    \"securityClassification\": \"Public\"\n}"
+          "raw": "{\n    \"resourceId\": \"my-super-resource-id\",\n    \"accessorId\": \"UNIQUE-USER-ID\",\n    \"accessType\": \"user\",\n    \"serviceName\": \"Service 1\",\n    \"resourceType\": \"Resource Type 1\",\n    \"resourceName\": \"resource\",\n    \"attributePermissions\": {\n    \t\"/test2\": [\"CREATE\", \"READ\"]\n    },\n    \"securityClassification\": \"Public\"\n}"
+        },
+        "url": {
+          "raw": "localhost:3703/lib/create-resource-access",
+          "host": [
+            "localhost"
+          ],
+          "port": "3703",
+          "path": [
+            "lib",
+            "create-resource-access"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Multiple Resource Access",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"resourceId\": \"my-super-resource-id\",\n    \"accessorId\": \"UNIQUE-USER-ID\",\n    \"accessType\": \"user\",\n    \"serviceName\": \"Service 1\",\n    \"resourceType\": \"Resource Type 1\",\n    \"resourceName\": \"resource\",\n    \"attributePermissions\": {\n    \t\"/test\": [\"CREATE\"],\n    \t\"/test2\": [\"CREATE\", \"READ\"],\n    \t\"/test3\": [\"CREATE\", \"UPDATE\"]\n    },\n    \"securityClassification\": \"Public\"\n}"
         },
         "url": {
           "raw": "localhost:3703/lib/create-resource-access",

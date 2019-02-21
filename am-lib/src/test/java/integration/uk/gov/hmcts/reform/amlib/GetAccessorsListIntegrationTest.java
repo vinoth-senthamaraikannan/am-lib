@@ -9,9 +9,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.OTHER_ACCESSOR_ID;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createRecord;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.READ_PERMISSION;
+import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrantForWholeDocument;
 
 class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
@@ -23,9 +23,9 @@ class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    void whenCheckingAccess_ifUserHasAccess_ShouldReturnUserIds() {
-        ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
-        ams.createResourceAccess(createRecord(resourceId, OTHER_ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
+    void ifUserHasAccessShouldReturnUserIds() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, OTHER_ACCESSOR_ID, READ_PERMISSION));
 
         List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
 
@@ -33,22 +33,20 @@ class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    void whenCheckingAccess_ifUserHasNoAccess_ShouldReturnNull() {
-        ams.createResourceAccess(createRecord(resourceId, OTHER_ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
+    void ifUserHasNoAccessShouldReturnNull() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
 
-        List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
+        List<String> list = ams.getAccessorsList(OTHER_ACCESSOR_ID, resourceId);
 
         assertThat(list).isNull();
     }
 
     @Test
-    void whenCheckingAccess_ToNonExistingResource_ShouldReturnNull() {
-        ams.createResourceAccess(createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
+    void whenCheckingAccessToNonExistingResourceShouldReturnNull() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
 
         String nonExistingResourceId = "bbbbbbbb";
 
-        List<String> list = ams.getAccessorsList(ACCESSOR_ID, nonExistingResourceId);
-
-        assertThat(list).isNull();
+        assertThat(ams.getAccessorsList(ACCESSOR_ID, nonExistingResourceId)).isNull();
     }
 }

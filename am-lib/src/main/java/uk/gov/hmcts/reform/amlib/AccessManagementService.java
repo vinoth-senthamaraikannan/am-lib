@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
+import uk.gov.hmcts.reform.amlib.exceptions.ErrorAddingEntriesToDatabaseException;
+import uk.gov.hmcts.reform.amlib.models.ExplicitAccessGrant;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
@@ -29,11 +32,39 @@ public class AccessManagementService {
     /**
      * Grants explicit access to resource accordingly to record configuration.
      *
-     * @param explicitAccessRecord a record that describes explicit access to resource
+     * <p>Operation is performed in transaction so that if not all records can be created then whole grant will fail.
+     *
+     * @param explicitAccessGrant an object that describes explicit access to resource
      */
-    public void createResourceAccess(ExplicitAccessRecord explicitAccessRecord) {
-        jdbi.useExtension(AccessManagementRepository.class,
-            dao -> dao.createAccessManagementRecord(explicitAccessRecord));
+    public void grantExplicitResourceAccess(ExplicitAccessGrant explicitAccessGrant) {
+        if (explicitAccessGrant.getAttributePermissions().size() == 0) {
+            throw new IllegalArgumentException("At least one attribute is required");
+        }
+        if (explicitAccessGrant.getAttributePermissions().entrySet().stream()
+            .anyMatch(attributePermission -> attributePermission.getValue().isEmpty())) {
+            throw new IllegalArgumentException("At least one permission per attribute is required");
+        }
+
+        jdbi.useTransaction(handle -> {
+            AccessManagementRepository dao = handle.attach(AccessManagementRepository.class);
+            try {
+                explicitAccessGrant.getAttributePermissions().entrySet().stream().map(attributePermission ->
+                    ExplicitAccessRecord.builder()
+                        .resourceId(explicitAccessGrant.getResourceId())
+                        .accessorId(explicitAccessGrant.getAccessorId())
+                        .explicitPermissions(attributePermission.getValue())
+                        .accessType(explicitAccessGrant.getAccessType())
+                        .serviceName(explicitAccessGrant.getServiceName())
+                        .resourceType(explicitAccessGrant.getResourceType())
+                        .resourceName(explicitAccessGrant.getResourceName())
+                        .attribute(attributePermission.getKey().toString())
+                        .securityClassification(explicitAccessGrant.getSecurityClassification())
+                        .build())
+                    .forEach(dao::createAccessManagementRecord);
+            } catch (Exception e) {
+                throw new ErrorAddingEntriesToDatabaseException(e);
+            }
+        });
     }
 
     /**
@@ -79,14 +110,14 @@ public class AccessManagementService {
         }
 
         if (READ.isGranted(explicitAccess.getPermissions())) {
-            Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-            attributePermissions.put("/", Permissions.fromSumOf(explicitAccess.getPermissions()));
+            Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+            attributePermissions.put(JsonPointer.valueOf(""), Permissions.fromSumOf(explicitAccess.getPermissions()));
 
             return FilterResourceResponse.builder()
-                    .resourceId(resourceId)
-                    .data(resourceJson)
-                    .permissions(attributePermissions)
-                    .build();
+                .resourceId(resourceId)
+                .data(resourceJson)
+                .permissions(attributePermissions)
+                .build();
         }
 
         return null;
