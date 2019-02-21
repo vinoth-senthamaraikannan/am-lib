@@ -14,7 +14,7 @@ import static uk.gov.hmcts.reform.amlib.enums.Permission.UPDATE;
 
 public final class TestConstants {
 
-    public static final String ACCESS_TYPE = "user";
+    public static final String EXPLICIT_ACCESS_TYPE = "user";
     public static final String SERVICE_NAME = "Service 1";
     public static final String RESOURCE_TYPE = "Resource Type 1";
     public static final String RESOURCE_NAME = "resource";

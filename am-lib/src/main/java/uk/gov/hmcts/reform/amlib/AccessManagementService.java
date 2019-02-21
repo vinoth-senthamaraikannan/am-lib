@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.amlib;
 
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
@@ -13,6 +11,7 @@ import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 import uk.gov.hmcts.reform.amlib.utils.Permissions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +70,8 @@ public class AccessManagementService {
      * @param userId       (accessorId)
      * @param resourceId   resource id
      * @param resourceJson json
-     * @return filtered resourceJson based on READ permissions or null if no READ permissions on resource
+     * @return filtered resourceJson based on READ permissions or null if no READ permissions on resource.
+     * Returns whole envelope with resource ID, filtered JSON and map of permissions.
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
@@ -82,25 +82,37 @@ public class AccessManagementService {
         }
 
         Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        ObjectNode filteredResource = JsonNodeFactory.instance.objectNode();
+
+        List<String> toKeep = new ArrayList<>();
 
         explicitAccess.forEach(explicitAccessRecord -> {
             attributePermissions.put(explicitAccessRecord.getAttribute(),
                 Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
-            if (READ.isGranted(explicitAccessRecord.getPermissions())) {
-                filteredResource.set(explicitAccessRecord.getAttribute().replaceFirst("/", ""),
-                    resourceJson.at(JsonPointer.valueOf(explicitAccessRecord.getAttribute())));
+            if (!READ.isGranted(explicitAccessRecord.getPermissions())) {
+                ((ObjectNode)resourceJson).remove(explicitAccessRecord.getAttribute().replaceFirst("/", ""));
+
+                System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
+                System.out.println("resourceJsonAfterRemove = " + resourceJson);
+            } else {
+                String test = explicitAccessRecord.getAttribute().replaceFirst("/", "");
+//                toKeep.add(test.substring(0, test.indexOf("/")).trim());
+//                toKeep.add(test.substring(test.indexOf("/")+1).trim());
+                toKeep.add(test);
+
+                System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
+                System.out.println("toKeep = " + toKeep);
             }
         });
 
-        if (filteredResource.toString().equals("{}")) {
-            return null;
-        } else {
-            return FilterResourceResponse.builder()
-                .resourceId(resourceId)
-                .data(filteredResource)
-                .permissions(attributePermissions)
-                .build();
-        }
+        ((ObjectNode) resourceJson).retain(toKeep);
+
+        System.out.println("resourceJsonAfterRetain = " + resourceJson);
+
+
+        return FilterResourceResponse.builder()
+            .resourceId(resourceId)
+            .data(resourceJson)
+            .permissions(attributePermissions)
+            .build();
     }
 }

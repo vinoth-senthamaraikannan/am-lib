@@ -38,20 +38,31 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
     @Test
     void whenAddTwoRecordsWithSameResourceIdAndUserIdButDifferentAttribute_ReturnsTwoAttributes() {
         ams.createResourceAccess(
-            createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, "/test"));
+            createRecord(resourceId, ACCESSOR_ID, RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
         ams.createResourceAccess(
-            createRecord(resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, "/name"));
+            createRecord(resourceId, ACCESSOR_ID, "/name", EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
+
+        Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        attributePermissions.put(RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
+        attributePermissions.put("/name", EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
+
+        ObjectNode filteredResource = JsonNodeFactory.instance.objectNode();
+        filteredResource.set(RESOURCE_EXPECTED_KEY, DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
+        filteredResource.set("name", DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-        assertThat(result).toString().contains("test");
-        assertThat(result).toString().contains("name");
+        assertThat(result).isEqualTo(FilterResourceResponse.builder()
+            .resourceId(resourceId)
+            .data(filteredResource)
+            .permissions(attributePermissions)
+            .build());
     }
 
     @Test
     void whenRowExistWithAccessorIdAndResourceId_ReturnPassedFilteredJsonObject() {
         ams.createResourceAccess(createRecord(
-            resourceId, ACCESSOR_ID, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS, RESOURCE_KEY));
+            resourceId, ACCESSOR_ID, RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS));
 
         Map<String, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
         attributePermissions.put(RESOURCE_KEY, EXPLICIT_READ_CREATE_UPDATE_PERMISSIONS);
@@ -67,6 +78,39 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
             .permissions(attributePermissions)
             .build());
     }
+
+//    @Test
+//    void voidTest() throws IOException {
+//        ams.createResourceAccess(createRecord(
+//            resourceId, ACCESSOR_ID, "/child/childAge", Stream.of(READ).collect(toSet())));
+//
+//        ams.createResourceAccess(createRecord(
+//            resourceId, ACCESSOR_ID, "/child/childName", Stream.of(CREATE).collect(toSet())));
+//
+////        Map<String, Set<Permission>> expectedAttributePermissions = new ConcurrentHashMap<>();
+////        expectedAttributePermissions.put("/testchild/childAge", Stream.of(CREATE,UPDATE,DELETE).collect(toSet()));
+////
+////        ObjectNode filteredResource = JsonNodeFactory.instance.objectNode();
+////        filteredResource.set(, DATA.at(JsonPointer.valueOf(RESOURCE_KEY)));
+//
+//
+////        ClassLoader classLoader = getClass().getClassLoader();
+////        URL resource = classLoader.getResource("resourceJson.json");
+////        File file = new File(resource.getPath());
+//
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        JsonNode obj = mapper.readTree("{\"child\": {\"childAge\": \"10\", \"childName\": \"James\"}}");
+//
+//
+//        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, obj);
+//
+//        System.out.println("result = " + result);
+//
+//
+//    }
+
 
     @Test
     void whenRowNotExistWithAccessorIdAndResourceId_ReturnNull() {

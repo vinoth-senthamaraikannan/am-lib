@@ -20,7 +20,7 @@ public final class TestDataFactory {
             .resourceId(resourceId)
             .accessorId(accessorId)
             .explicitPermissions(explicitPermissions)
-            .accessType(TestConstants.ACCESS_TYPE)
+            .accessType(TestConstants.EXPLICIT_ACCESS_TYPE)
             .serviceName(TestConstants.SERVICE_NAME)
             .resourceType(TestConstants.RESOURCE_TYPE)
             .resourceName(TestConstants.RESOURCE_NAME)
@@ -31,13 +31,13 @@ public final class TestDataFactory {
 
     public static ExplicitAccessRecord createRecord(String resourceId,
                                                     String accessorId,
-                                                    Set<Permission> explicitPermissions,
-                                                    String attribute) {
+                                                    String attribute,
+                                                    Set<Permission> explicitPermissions) {
         return ExplicitAccessRecord.builder()
             .resourceId(resourceId)
             .accessorId(accessorId)
             .explicitPermissions(explicitPermissions)
-            .accessType(TestConstants.ACCESS_TYPE)
+            .accessType(TestConstants.EXPLICIT_ACCESS_TYPE)
             .serviceName(TestConstants.SERVICE_NAME)
             .resourceType(TestConstants.RESOURCE_TYPE)
             .resourceName(TestConstants.RESOURCE_NAME)
@@ -50,7 +50,7 @@ public final class TestDataFactory {
         return ExplicitAccessMetadata.builder()
             .resourceId(resourceId)
             .accessorId(TestConstants.ACCESSOR_ID)
-            .accessType(TestConstants.ACCESS_TYPE)
+            .accessType(TestConstants.EXPLICIT_ACCESS_TYPE)
             .serviceName(TestConstants.SERVICE_NAME)
             .resourceType(TestConstants.RESOURCE_TYPE)
             .resourceName(TestConstants.RESOURCE_NAME)
