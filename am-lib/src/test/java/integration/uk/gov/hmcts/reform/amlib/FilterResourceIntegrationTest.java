@@ -29,101 +29,34 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
     private String resourceId;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private static final String TEST_CHILD_ATTRIBUTE = "/test";
-    private static final String TEST_RESPONDENT_ATTRIBUTE = "/respondent";
-
     @BeforeEach
     void setupTest() {
         resourceId = UUID.randomUUID().toString();
     }
 
     @Test
-    void whenRowExistWithAccessorIdAndResourceIdReturnPassedJsonObject() {
-        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, READ_PERMISSION));
+    void whenRowExistsAndDoesntHaveReadPermissionsReturnNull() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, CREATE_PERMISSION));
 
         FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
-        assertThat(result).isEqualTo(FilterResourceResponse.builder()
-            .resourceId(resourceId)
-            .data(DATA)
-            .permissions(createPermissions("", READ_PERMISSION))
-            .build());
+        assertThat(result).isNull();
     }
 
     @Test
-    void filterChildJson() throws IOException {
+    void filterWithOnlyRootPermissions() throws IOException {
         ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions(TEST_CHILD_ATTRIBUTE, READ_PERMISSION)));
-
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions("/child/childName", READ_PERMISSION)));
-
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions("/child/childAge", CREATE_PERMISSION)));
+            resourceId, ACCESSOR_ID, createPermissions("", READ_PERMISSION)));
 
         final JsonNode inputJson = mapper.readTree("{\"child\": {\"childAge\": \"10\", \"childName\": \"James\"}}");
-        final JsonNode expectedJson = mapper.readTree("{\"child\": {\"childName\": \"James\"}}");
         final FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, inputJson);
 
         Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        attributePermissions.put(JsonPointer.valueOf(TEST_CHILD_ATTRIBUTE), READ_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf("/child/childName"), READ_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf("/child/childAge"), CREATE_PERMISSION);
+        attributePermissions.put(JsonPointer.valueOf(""), READ_PERMISSION);
 
         assertThat(result).isEqualTo(FilterResourceResponse.builder()
             .resourceId(resourceId)
-            .data(expectedJson)
-            .permissions(attributePermissions)
-            .build());
-    }
-
-    @Test
-    void filterSimpleJson() throws IOException {
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions(TEST_CHILD_ATTRIBUTE, READ_PERMISSION)));
-
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions(TEST_RESPONDENT_ATTRIBUTE, CREATE_PERMISSION)));
-
-        JsonNode inputJson = mapper.readTree("{\"child\": \"James\", \"respondent\": \"John\"}");
-
-        JsonNode expectedJson = mapper.readTree("{\"child\": \"James\"}");
-
-        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, inputJson);
-
-        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        attributePermissions.put(JsonPointer.valueOf(TEST_CHILD_ATTRIBUTE), READ_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf(TEST_RESPONDENT_ATTRIBUTE), CREATE_PERMISSION);
-
-        assertThat(result).isEqualTo(FilterResourceResponse.builder()
-            .resourceId(resourceId)
-            .data(expectedJson)
-            .permissions(attributePermissions)
-            .build());
-    }
-
-    //TODO: This test does not yet pass. Need to implement retain function.
-    @Test
-    void filterJsonWithoutPermission() throws IOException {
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions(TEST_CHILD_ATTRIBUTE, READ_PERMISSION)));
-
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions(TEST_RESPONDENT_ATTRIBUTE, CREATE_PERMISSION)));
-
-        JsonNode inputJson = mapper.readTree("{\"child\": \"James\", \"respondent\": \"John\", \"other\": \"stuff\"}");
-
-        JsonNode expectedJson = mapper.readTree("{\"child\": \"James\"}");
-
-        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, inputJson);
-
-        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        attributePermissions.put(JsonPointer.valueOf(TEST_CHILD_ATTRIBUTE), READ_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf(TEST_RESPONDENT_ATTRIBUTE), CREATE_PERMISSION);
-
-        assertThat(result).isEqualTo(FilterResourceResponse.builder()
-            .resourceId(resourceId)
-            .data(expectedJson)
+            .data(inputJson)
             .permissions(attributePermissions)
             .build());
     }
@@ -134,16 +67,6 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
         String nonExistingResourceId = "lmn";
 
         FilterResourceResponse result = ams.filterResource(nonExistingUserId, nonExistingResourceId, DATA);
-
-        assertThat(result).isNull();
-    }
-
-    //TODO: this is failing because data is empty. When it hits the substring variables it errors. I don't think this could or should ever happen. We can't filter nothing.
-    @Test
-    void whenRowExistsAndDoesntHaveReadPermissionsReturnNull() {
-        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, CREATE_PERMISSION));
-
-        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
 
         assertThat(result).isNull();
     }

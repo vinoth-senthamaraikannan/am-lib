@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
@@ -19,15 +18,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 
 public class AccessManagementService {
+    private FilterService filterService;
+
     private final Jdbi jdbi;
 
-    public AccessManagementService(String url, String user, String password) {
+    public AccessManagementService(String url, String user, String password, FilterService filterService) {
         this.jdbi = Jdbi.create(url, user, password);
 
         this.jdbi.installPlugin(new SqlObjectPlugin());
+
+        this.filterService = filterService;
     }
 
     /**
@@ -101,53 +103,26 @@ public class AccessManagementService {
      * @param resourceId   resource id
      * @param resourceJson json
      * @return filtered resourceJson based on READ permissions or null if no READ permissions on resource. Returns
-     *     whole envelope with resource ID, filtered JSON and map of permissions.
+     * whole envelope with resource ID, filtered JSON and map of permissions.
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
             dao -> dao.getExplicitAccess(userId, resourceId));
 
-        if (explicitAccess.isEmpty()) {
+        if (explicitAccess.isEmpty() || resourceJson.size() == 0) {
             return null;
         }
 
         Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-
-        //        List<String> toKeep = new ArrayList<>();
-
-        JsonNode resourceCopy = resourceJson.deepCopy();
-
-        explicitAccess.forEach(explicitAccessRecord -> {
+        explicitAccess.forEach(explicitAccessRecord ->
             attributePermissions.put(JsonPointer.valueOf(explicitAccessRecord.getAttribute()),
-                Permissions.fromSumOf(explicitAccessRecord.getPermissions()));
+                Permissions.fromSumOf(explicitAccessRecord.getPermissions())));
 
-            if (!READ.isGranted(explicitAccessRecord.getPermissions())) {
-                String jsonPointer = explicitAccessRecord.getAttribute();
-                String path = jsonPointer.substring(0, jsonPointer.lastIndexOf('/'));
-                String fieldName = jsonPointer.substring(jsonPointer.lastIndexOf('/') + 1);
-
-                ((ObjectNode) resourceCopy.at(JsonPointer.valueOf(path))).remove(fieldName);
-
-                //System.out.println("explicitAccessRecord.getAttribute() = " + explicitAccessRecord.getAttribute());
-                //System.out.println("resourceJsonAfterRemove = " + resourceCopy);
-                //} else {
-                //    String test = explicitAccessRecord.getAttribute().replaceFirst("/", "");
-                //    toKeep.add(test.substring(0, test.indexOf("/")).trim());
-                //    toKeep.add(test.substring(test.indexOf("/")+1).trim());
-                //    toKeep.add(test);
-
-                //    System.out.println("explicitAccessRecord.getAttribute()= " + explicitAccessRecord.getAttribute());
-                //    System.out.println("toKeep = " + toKeep);
-            }
-        });
-
-        //        ((ObjectNode) resourceJson).retain(toKeep);
-
-        //        System.out.println("resourceJsonAfterRetain = " + resourceJson);
+        JsonNode filteredJson = filterService.filterJson(resourceJson, attributePermissions);
 
         return FilterResourceResponse.builder()
             .resourceId(resourceId)
-            .data(resourceCopy)
+            .data(filteredJson)
             .permissions(attributePermissions)
             .build();
     }
