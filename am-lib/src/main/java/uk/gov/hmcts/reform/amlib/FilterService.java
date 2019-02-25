@@ -34,10 +34,10 @@ public class FilterService {
             .sorted(Comparator.comparing(JsonPointer::toString))
             .reduce(new ArrayList<>(),
                 (List<JsonPointer> result, JsonPointer pointerCandidate) -> {
-                    if (result.stream().noneMatch(acceptedPointer -> { // already contains parent so no point adding
-                        return acceptedPointer.toString().equals("")
-                            || pointerCandidate.toString().startsWith(acceptedPointer.toString());
-                    })) {
+                    // already contains parent so no point adding
+                    if (result.stream().noneMatch(acceptedPointer -> acceptedPointer.toString().equals("")
+                        || pointerCandidate.toString().startsWith(acceptedPointer.toString())
+                    )) {
                         result.add(pointerCandidate);
                     }
                     return result;
