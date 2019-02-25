@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.amlib;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 
+@Slf4j
 public class FilterService {
 
     JsonNode filterJson(JsonNode resourceJson, Map<JsonPointer, Set<Permission>> attributePermissions) {
@@ -24,7 +26,7 @@ public class FilterService {
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
 
-        System.out.println("> nodesWithRead = " + nodesWithRead);
+        log.debug("> Nodes with READ access: " + nodesWithRead);
 
         if (nodesWithRead.isEmpty()) {
             return null;
@@ -43,19 +45,19 @@ public class FilterService {
                     return result;
                 }, (firstPointer, secondPointer) -> firstPointer);
 
-        System.out.println("> uniqueNodesWithRead = " + uniqueNodesWithRead);
+        log.debug("> Unique nodes with READ access: " + uniqueNodesWithRead);
 
         uniqueNodesWithRead.forEach(pointerCandidateForRetaining -> {
             if (pointerCandidateForRetaining.toString().isEmpty()) {
                 return;
             }
-            System.out.println(">> pointerCandidateForRetaining = " + pointerCandidateForRetaining);
+            log.debug(">> Pointer candidate for retaining: " + pointerCandidateForRetaining);
             JsonPointer fieldPointer = pointerCandidateForRetaining.last();
             JsonPointer parentPointer = pointerCandidateForRetaining.head();
 
             while (parentPointer != null) {
                 ObjectNode node = (ObjectNode) resourceCopy.at(parentPointer);
-                System.out.println(">>> retaining '" + fieldPointer + "' out of '" + parentPointer + "'");
+                log.debug(">>> Retaining '" + fieldPointer + "' out of '" + parentPointer + "'");
                 node.retain(fieldPointer.toString().substring(1));
 
                 fieldPointer = parentPointer.last();
@@ -68,10 +70,10 @@ public class FilterService {
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
 
-        System.out.println("> nodesWithoutRead = " + nodesWithoutRead);
+        log.debug("> Nodes without READ access: " + nodesWithoutRead);
 
         nodesWithoutRead.forEach(pointerCandidateForRemoval -> {
-            System.out.println(">> pointerCandidateForRemoval = " + pointerCandidateForRemoval);
+            log.debug(">> Pointer candidate for removal: " + pointerCandidateForRemoval);
             List<JsonPointer> childPointersWithRead = nodesWithRead.stream()
                 .filter(pointerWithRead -> pointerWithRead.toString().startsWith(pointerCandidateForRemoval.toString()))
                 .collect(Collectors.toList());
