@@ -97,11 +97,11 @@ public class AccessManagementService {
      * Filters {@link JsonNode} to remove fields that user has no access to (no READ permission). In addition to that
      * method also returns map of all permissions that user has to resource.
      *
-     * @param userId  accessor ID
-     * @param resourceId resource ID
+     * @param userId       accessor ID
+     * @param resourceId   resource ID
      * @param resourceJson JSON resource
      * @return envelope {@link FilterResourceResponse} with resource ID, filtered JSON and map of permissions if access
-     * to resource is configured, otherwise null.
+     *     to resource is configured, otherwise null.
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,

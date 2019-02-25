@@ -19,8 +19,6 @@ import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 public class FilterService {
 
     JsonNode filterJson(JsonNode resourceJson, Map<JsonPointer, Set<Permission>> attributePermissions) {
-        JsonNode resourceCopy = resourceJson.deepCopy();
-
         List<JsonPointer> nodesWithRead = attributePermissions.entrySet().stream()
             .filter(entry -> entry.getValue().contains(READ))
             .map(Map.Entry::getKey)
@@ -46,6 +44,8 @@ public class FilterService {
                 }, (firstPointer, secondPointer) -> firstPointer);
 
         log.debug("> Unique nodes with READ access: " + uniqueNodesWithRead);
+
+        JsonNode resourceCopy = resourceJson.deepCopy();
 
         uniqueNodesWithRead.forEach(pointerCandidateForRetaining -> {
             if (pointerCandidateForRetaining.toString().isEmpty()) {
@@ -77,14 +77,16 @@ public class FilterService {
             List<JsonPointer> childPointersWithRead = nodesWithRead.stream()
                 .filter(pointerWithRead -> pointerWithRead.toString().startsWith(pointerCandidateForRemoval.toString()))
                 .collect(Collectors.toList());
-            if (!childPointersWithRead.isEmpty()) {
-                // retain node's children with READ
-                ObjectNode node = (ObjectNode) resourceCopy.at(pointerCandidateForRemoval);
-                node.retain(childPointersWithRead.stream().map(p -> p.last().toString().substring(1)).collect(Collectors.toList()));
-            } else {
+            if (childPointersWithRead.isEmpty()) {
                 // remove whole node
                 ObjectNode node = (ObjectNode) resourceCopy.at(pointerCandidateForRemoval.head());
                 node.remove(pointerCandidateForRemoval.last().toString().substring(1));
+            } else {
+                // retain node's children with READ
+                ObjectNode node = (ObjectNode) resourceCopy.at(pointerCandidateForRemoval);
+                node.retain(childPointersWithRead.stream()
+                    .map(pointer -> pointer.last().toString().substring(1))
+                    .collect(Collectors.toList()));
             }
         });
 

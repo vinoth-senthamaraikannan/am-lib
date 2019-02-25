@@ -22,6 +22,7 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.CREATE_PERMISSION;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.READ_PERMISSION;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createPermissions;
 
+@SuppressWarnings("PMD")
 class FilterServiceTest {
 
     private final ObjectMapper mapper = new ObjectMapper()
