@@ -22,13 +22,80 @@ public class FilterServiceTest {
     private final FilterService fs = new FilterService();
 
     @Test
-    void filterWithRootReadPermissionReturnsUnfilteredResource() throws IOException {
-        final JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/filterServiceTestInput.json"));
+    void readPermissionForWholeDocumentReturnsUnfilteredResource() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
 
         JsonNode returnedJson = fs.filterJson(inputJson, createPermissions("", READ_PERMISSION));
 
         assertThat(returnedJson).isEqualTo(inputJson);
     }
+
+    @Test
+    void itShouldBePossibleToShowEverythingExceptOneProperty() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        attributePermissions.put(JsonPointer.valueOf(""), READ_PERMISSION);
+        attributePermissions.put(JsonPointer.valueOf("/name"), CREATE_PERMISSION);
+
+        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
+
+        String content = "{\n" +
+            "  \"age\": 18,\n" +
+            "  \"address\": {\n" +
+            "    \"city\": \"London\",\n" +
+            "    \"postcode\": \"SE1\"\n" +
+            "  }\n" +
+            "}";
+        assertThat(returnedJson).isEqualTo(mapper.readTree(content));
+    }
+
+    @Test
+    void itShouldBePossibleToShowEverythingExceptOnePropertyOtherThanProperty() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        attributePermissions.put(JsonPointer.valueOf(""), READ_PERMISSION);
+        attributePermissions.put(JsonPointer.valueOf("/address"), CREATE_PERMISSION);
+        attributePermissions.put(JsonPointer.valueOf("/address/city"), READ_PERMISSION);
+
+        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
+
+        String content = "{\n" +
+            "  \"name\": \"John\",\n" +
+            "  \"age\": 18,\n" +
+            "  \"address\": {\n" +
+            "    \"city\": \"London\"\n" +
+            "  }\n" +
+            "}";
+        assertThat(returnedJson).isEqualTo(mapper.readTree(content));
+    }
+
+    @Test
+    void itShould() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
+        attributePermissions.put(JsonPointer.valueOf("/name"), READ_PERMISSION);
+
+        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
+
+        String content = "{\n" +
+            "  \"name\": \"John\"\n" +
+            "}";
+        assertThat(returnedJson).isEqualTo(mapper.readTree(content));
+    }
+
+    @Test
+    void itShouldReturnNullWhenNoReadPermissionIsAssigned() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        JsonNode returnedJson = fs.filterJson(inputJson, createPermissions("/name", CREATE_PERMISSION));
+
+        assertThat(returnedJson).isNull();
+    }
+
+    // REVIEW BELOW CASES
 
     @Test
     void filterNestedJsonWhenRootExplicitlyHasNoReadButAnAttributeDoes() throws IOException {
@@ -84,28 +151,4 @@ public class FilterServiceTest {
         assertThat(returnedJson).isEqualTo(expectedJson);
     }
 
-    @Test
-    void filterRealisticData() throws IOException {
-        final JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/ccdCaseDataInput.json"));
-        final JsonNode expectedJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/ccdCaseDataExpected.json"));
-
-        final Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        attributePermissions.put(JsonPointer.valueOf(""), READ_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf("/jurisdiction"), CREATE_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf("/case_data/risks"), CREATE_PERMISSION);
-        attributePermissions.put(JsonPointer.valueOf("/case_data/others/additionalOthers"), CREATE_PERMISSION);
-
-        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
-
-        assertThat(returnedJson).isEqualTo(expectedJson);
-    }
-
-    @Test
-    void noReadPermissionsForAttributeReturnsEmptyArray() throws IOException {
-        final JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/filterServiceTestInput.json"));
-
-        JsonNode returnedJson = fs.filterJson(inputJson, createPermissions("/child", CREATE_PERMISSION));
-
-        assertThat(returnedJson).isEmpty();
-    }
 }

@@ -1,0 +1,10 @@
+{
+  "claimant": {
+    "name": "Damian",
+    "age": 30
+  },
+  "defendant": {
+    "name": "John",
+    "age": 25
+  }
+}
