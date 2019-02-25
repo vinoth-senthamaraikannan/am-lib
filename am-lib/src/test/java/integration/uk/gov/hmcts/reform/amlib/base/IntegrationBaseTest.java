@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 import uk.gov.hmcts.reform.amlib.AccessManagementService;
-import uk.gov.hmcts.reform.amlib.FilterService;
 
 @SuppressWarnings("PMD")
 public abstract class IntegrationBaseTest {
@@ -32,7 +31,7 @@ public abstract class IntegrationBaseTest {
 
     @BeforeEach
     void setup() {
-        ams = new AccessManagementService(db.getJdbcUrl(), db.getUsername(), db.getPassword(), new FilterService());
+        ams = new AccessManagementService(db.getJdbcUrl(), db.getUsername(), db.getPassword());
     }
 
     private static void initSchema() {

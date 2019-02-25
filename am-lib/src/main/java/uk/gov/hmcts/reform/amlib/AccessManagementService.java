@@ -16,20 +16,18 @@ import uk.gov.hmcts.reform.amlib.utils.Permissions;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class AccessManagementService {
-    private FilterService filterService;
+
+    private final FilterService filterService = new FilterService();
 
     private final Jdbi jdbi;
 
-    public AccessManagementService(String url, String user, String password, FilterService filterService) {
-        this.jdbi = Jdbi.create(url, user, password);
-
-        this.jdbi.installPlugin(new SqlObjectPlugin());
-
-        this.filterService = filterService;
+    public AccessManagementService(String url, String user, String password) {
+        this.jdbi = Jdbi.create(url, user, password)
+            .installPlugin(new SqlObjectPlugin());
     }
 
     /**
@@ -96,27 +94,29 @@ public class AccessManagementService {
     }
 
     /**
-     * Returns {@link FilterResourceResponse} when record with userId and resourceId exist and has READ permissions,
-     * otherwise null.
+     * Filters {@link JsonNode} to remove fields that user has no access to (no READ permission). In addition to that
+     * method also returns map of all permissions that user has to resource.
      *
-     * @param userId       (accessorId)
-     * @param resourceId   resource id
-     * @param resourceJson json
-     * @return filtered resourceJson based on READ permissions or null if no READ permissions on resource. Returns
-     * whole envelope with resource ID, filtered JSON and map of permissions.
+     * @param userId  accessor ID
+     * @param resourceId resource ID
+     * @param resourceJson JSON resource
+     * @return envelope {@link FilterResourceResponse} with resource ID, filtered JSON and map of permissions if access
+     * to resource is configured, otherwise null.
      */
     public FilterResourceResponse filterResource(String userId, String resourceId, JsonNode resourceJson) {
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
             dao -> dao.getExplicitAccess(userId, resourceId));
 
-        if (explicitAccess.isEmpty() || resourceJson.size() == 0) {
+        if (explicitAccess.isEmpty()) {
             return null;
         }
 
-        Map<JsonPointer, Set<Permission>> attributePermissions = new ConcurrentHashMap<>();
-        explicitAccess.forEach(explicitAccessRecord ->
-            attributePermissions.put(JsonPointer.valueOf(explicitAccessRecord.getAttribute()),
-                Permissions.fromSumOf(explicitAccessRecord.getPermissions())));
+        Map<JsonPointer, Set<Permission>> attributePermissions = explicitAccess.stream().collect(
+            Collectors.toMap(
+                explicitAccessRecord -> JsonPointer.valueOf(explicitAccessRecord.getAttribute()),
+                explicitAccessRecord -> Permissions.fromSumOf(explicitAccessRecord.getPermissions())
+            )
+        );
 
         JsonNode filteredJson = filterService.filterJson(resourceJson, attributePermissions);
 

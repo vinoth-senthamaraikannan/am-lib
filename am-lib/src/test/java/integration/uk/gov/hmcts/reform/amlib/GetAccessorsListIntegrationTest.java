@@ -11,9 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.OTHER_ACCESSOR_ID;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.READ_PERMISSION;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrant;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrantForWholeDocument;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createPermissions;
 
 class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
@@ -26,10 +24,8 @@ class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
     @Test
     void ifUserHasAccessShouldReturnUserIds() {
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, ACCESSOR_ID, createPermissions("", READ_PERMISSION)));
-        ams.grantExplicitResourceAccess(createGrant(
-            resourceId, OTHER_ACCESSOR_ID, createPermissions("", READ_PERMISSION)));
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, OTHER_ACCESSOR_ID, READ_PERMISSION));
 
         List<String> list = ams.getAccessorsList(ACCESSOR_ID, resourceId);
 
@@ -38,7 +34,7 @@ class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
     @Test
     void ifUserHasNoAccessShouldReturnNull() {
-        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, READ_PERMISSION));
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
 
         List<String> list = ams.getAccessorsList(OTHER_ACCESSOR_ID, resourceId);
 
@@ -47,7 +43,7 @@ class GetAccessorsListIntegrationTest extends IntegrationBaseTest {
 
     @Test
     void whenCheckingAccessToNonExistingResourceShouldReturnNull() {
-        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, READ_PERMISSION));
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
 
         String nonExistingResourceId = "bbbbbbbb";
 

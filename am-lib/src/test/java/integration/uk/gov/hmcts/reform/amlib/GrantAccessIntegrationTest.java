@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_READ_CREA
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.READ_PERMISSION;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrant;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrantForWholeDocument;
-import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createPermissions;
+import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createPermissionsForWholeDocument;
 
 class GrantAccessIntegrationTest extends IntegrationBaseTest {
 
@@ -42,9 +42,10 @@ class GrantAccessIntegrationTest extends IntegrationBaseTest {
     @Test
     @SuppressWarnings("PMD")
     void noPermissionsForAttributesShouldThrowException() {
+        Map<JsonPointer, Set<Permission>> attributeNoPermissions = createPermissionsForWholeDocument(new HashSet<>());
+
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
-            ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID,
-                createPermissions("", new HashSet<>()))))
+            ams.grantExplicitResourceAccess(createGrant(resourceId, ACCESSOR_ID, attributeNoPermissions)))
             .withMessage("At least one permission per attribute is required");
     }
 

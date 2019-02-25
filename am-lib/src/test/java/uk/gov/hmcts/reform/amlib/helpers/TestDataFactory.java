@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESSOR_ID;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.EXPLICIT_ACCESS_TYPE;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ACCESS_TYPE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_NAME;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_TYPE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.SECURITY_CLASSIFICATION;
@@ -22,13 +22,24 @@ public final class TestDataFactory {
         //NO-OP
     }
 
+    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
+                                                                  Set<Permission> permissions) {
+        return createGrantForWholeDocument(resourceId, ACCESSOR_ID, permissions);
+    }
+
+    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
+                                                                  String accessorId,
+                                                                  Set<Permission> permissions) {
+        return createGrant(resourceId, accessorId, createPermissionsForWholeDocument(permissions));
+    }
+
     public static ExplicitAccessGrant createGrant(String resourceId,
                                                   String accessorId,
                                                   Map<JsonPointer, Set<Permission>> attributePermissions) {
         return ExplicitAccessGrant.builder()
             .resourceId(resourceId)
             .accessorId(accessorId)
-            .accessType(EXPLICIT_ACCESS_TYPE)
+            .accessType(ACCESS_TYPE)
             .serviceName(SERVICE_NAME)
             .resourceType(RESOURCE_TYPE)
             .resourceName(RESOURCE_NAME)
@@ -37,9 +48,8 @@ public final class TestDataFactory {
             .build();
     }
 
-    public static ExplicitAccessGrant createGrantForWholeDocument(String resourceId,
-                                                                  Set<Permission> permissions) {
-        return createGrant(resourceId, ACCESSOR_ID, createPermissions("", permissions));
+    public static Map<JsonPointer, Set<Permission>> createPermissionsForWholeDocument(Set<Permission> permissions) {
+        return createPermissions("", permissions);
     }
 
     public static Map<JsonPointer, Set<Permission>> createPermissions(String attribute,
@@ -53,7 +63,7 @@ public final class TestDataFactory {
         return ExplicitAccessMetadata.builder()
             .resourceId(resourceId)
             .accessorId(ACCESSOR_ID)
-            .accessType(EXPLICIT_ACCESS_TYPE)
+            .accessType(ACCESS_TYPE)
             .serviceName(SERVICE_NAME)
             .resourceType(RESOURCE_TYPE)
             .resourceName(RESOURCE_NAME)
