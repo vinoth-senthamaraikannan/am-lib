@@ -26,19 +26,6 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
     }
 
     @Test
-    void whenRowExistsAndDoesNotHaveReadPermissionsReturnEnvelopeWithoutData() {
-        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, CREATE_PERMISSION));
-
-        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
-
-        assertThat(result).isEqualTo(FilterResourceResponse.builder()
-            .resourceId(resourceId)
-            .data(null)
-            .permissions(ImmutableMap.of(JsonPointer.valueOf(""), CREATE_PERMISSION))
-            .build());
-    }
-
-    @Test
     void whenRowExistsAndHaveReadPermissionsReturnEnvelopeWithData() {
         ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, READ_PERMISSION));
 
@@ -48,6 +35,19 @@ class FilterResourceIntegrationTest extends IntegrationBaseTest {
             .resourceId(resourceId)
             .data(DATA)
             .permissions(ImmutableMap.of(JsonPointer.valueOf(""), READ_PERMISSION))
+            .build());
+    }
+
+    @Test
+    void whenRowExistsAndDoesNotHaveReadPermissionsReturnEnvelopeWithoutData() {
+        ams.grantExplicitResourceAccess(createGrantForWholeDocument(resourceId, ACCESSOR_ID, CREATE_PERMISSION));
+
+        FilterResourceResponse result = ams.filterResource(ACCESSOR_ID, resourceId, DATA);
+
+        assertThat(result).isEqualTo(FilterResourceResponse.builder()
+            .resourceId(resourceId)
+            .data(null)
+            .permissions(ImmutableMap.of(JsonPointer.valueOf(""), CREATE_PERMISSION))
             .build());
     }
 
