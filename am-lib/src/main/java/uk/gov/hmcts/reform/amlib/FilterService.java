@@ -50,7 +50,7 @@ public class FilterService {
             if (pointerCandidateForRetaining.toString().isEmpty()) {
                 return;
             }
-            System.out.println(">> pointerCandidateForRetaining" + pointerCandidateForRetaining);
+            System.out.println(">> pointerCandidateForRetaining = " + pointerCandidateForRetaining);
             ObjectNode node = (ObjectNode) resourceCopy.at(pointerCandidateForRetaining.head());
             node.retain(pointerCandidateForRetaining.last().toString().substring(1));
         });

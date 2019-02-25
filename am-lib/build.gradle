@@ -72,6 +72,7 @@ dependencies {
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.12.0'
     testCompile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
     testCompile group: 'org.testcontainers', name: 'postgresql', version: '1.10.6'
+    testCompile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
 }
 
 task codeCoverageReport(type: JacocoReport, dependsOn: test) {
