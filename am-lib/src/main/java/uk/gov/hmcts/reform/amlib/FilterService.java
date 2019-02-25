@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 
@@ -51,8 +50,17 @@ public class FilterService {
                 return;
             }
             System.out.println(">> pointerCandidateForRetaining = " + pointerCandidateForRetaining);
-            ObjectNode node = (ObjectNode) resourceCopy.at(pointerCandidateForRetaining.head());
-            node.retain(pointerCandidateForRetaining.last().toString().substring(1));
+            JsonPointer fieldPointer = pointerCandidateForRetaining.last();
+            JsonPointer parentPointer = pointerCandidateForRetaining.head();
+
+            while (parentPointer != null) {
+                ObjectNode node = (ObjectNode) resourceCopy.at(parentPointer);
+                System.out.println(">>> retaining '" + fieldPointer + "' out of '" + parentPointer + "'");
+                node.retain(fieldPointer.toString().substring(1));
+
+                fieldPointer = parentPointer.last();
+                parentPointer = parentPointer.head();
+            }
         });
 
         List<JsonPointer> nodesWithoutRead = attributePermissions.entrySet().stream()
