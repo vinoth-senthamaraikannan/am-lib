@@ -366,6 +366,30 @@ class FilterServiceTest {
     }
 
     @Test
+    void itShouldBePossibleToHideEverythingByDenyingAllPermissions() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        Map<JsonPointer, Set<Permission>> attributePermissions = ImmutableMap.<JsonPointer, Set<Permission>>builder()
+            .put(JsonPointer.valueOf("/claimant"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/name"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/age"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/address"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/address/city"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/address/postcode"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant/name"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant/address"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant/address/city"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant/address/postcode"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/amount"), CREATE_PERMISSION)
+            .build();
+
+        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
+
+        assertThat(returnedJson).isNull();
+    }
+
+    @Test
     void itShouldBePossibleToShowLeafLevelValueOnlyWhenParentIsForbidden() throws IOException {
         JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
 
