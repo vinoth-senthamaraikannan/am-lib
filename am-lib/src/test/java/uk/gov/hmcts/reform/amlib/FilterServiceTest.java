@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
 import lombok.Data;
@@ -434,6 +435,23 @@ class FilterServiceTest {
                 .build()
             )
         );
+    }
+
+    @Test
+    @Disabled("Temporarily to bring change to preview env")
+    void itShouldReturnEmptyNodeWhenFieldsDoNotExist() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        Map<JsonPointer, Set<Permission>> attributePermissions = ImmutableMap.<JsonPointer, Set<Permission>>builder()
+            .put(JsonPointer.valueOf("/version"), READ_PERMISSION)
+            .put(JsonPointer.valueOf("/claimant/id"), READ_PERMISSION)
+            .put(JsonPointer.valueOf("/defendant/mobile"), CREATE_PERMISSION)
+            .put(JsonPointer.valueOf("/updated"), CREATE_PERMISSION)
+            .build();
+
+        JsonNode returnedJson = fs.filterJson(inputJson, attributePermissions);
+
+        assertThat(returnedJson).isEqualTo(JsonNodeFactory.instance.objectNode());
     }
 
     @Builder
