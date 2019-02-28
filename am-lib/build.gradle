@@ -66,6 +66,7 @@ dependencies {
     compile group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.6.0'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
     testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.6'
     testCompileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.6'
