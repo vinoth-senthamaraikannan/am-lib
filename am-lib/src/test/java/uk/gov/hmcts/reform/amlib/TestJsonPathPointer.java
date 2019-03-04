@@ -15,6 +15,26 @@ public class TestJsonPathPointer {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
+    void test() {
+
+    }
+
+    @Test
+    void testJsonPointer() throws IOException {
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
+
+        long startTime = System.currentTimeMillis();
+
+        JsonNode json = inputJson.at(JsonPointer.valueOf("/claimant"));
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("duration = " + (endTime - startTime) + "ms");
+
+        System.out.println("outputJson = " + json);
+    }
+
+    @Test
     void testJsonPath() throws IOException {
         JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
 
@@ -32,18 +52,5 @@ public class TestJsonPathPointer {
         System.out.println("outputJson = " + json);
     }
 
-    @Test
-    void testJsonPointer() throws IOException {
-        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/input.json"));
 
-        long startTime = System.currentTimeMillis();
-
-        JsonNode json = inputJson.at(JsonPointer.valueOf("/claimant"));
-
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("duration = " + (endTime - startTime) + "ms");
-
-        System.out.println("outputJson = " + json);
-    }
 }
