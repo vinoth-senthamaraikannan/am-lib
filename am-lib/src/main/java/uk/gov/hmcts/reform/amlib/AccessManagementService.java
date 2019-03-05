@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.amlib;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.NonNull;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.amlib.models.ExplicitAccessGrant;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.models.FilterResourceResponse;
+import uk.gov.hmcts.reform.amlib.models.RoleBasedAccessRecord;
 import uk.gov.hmcts.reform.amlib.repositories.AccessManagementRepository;
 import uk.gov.hmcts.reform.amlib.utils.Permissions;
 
@@ -17,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import javax.sql.DataSource;
 
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
@@ -49,7 +53,7 @@ public class AccessManagementService {
     /**
      * Grants explicit access to resource accordingly to record configuration.
      *
-     * <p>Operation is performed in transaction so that if not all records can be created then whole grant will fail.
+     * <p>Operation is performed in a transaction so that if not all records can be created then whole grant will fail.
      *
      * @param explicitAccessGrant an object that describes explicit access to resource
      */
@@ -138,5 +142,36 @@ public class AccessManagementService {
         }
 
         return null;
+    }
+
+    /**
+     * Retrieves a list of {@link RoleBasedAccessRecord } and returns attribute and permissions values.
+     *
+     * @param serviceName  name of service
+     * @param resourceType type of resource
+     * @param resourceName name of a resource
+     * @param roleNames    A set of role names. Currently only one role name is supported but
+     *                     in future implementations we shall support having multiple role names
+     * @return a map of attributes and their corresponding permissions or null
+     */
+    @SuppressWarnings("PMD") // AvoidLiteralsInIfCondition: magic number used until multiple roles are supported
+    public Map<JsonPointer, Set<Permission>> getRolePermissions(
+        @NonNull String serviceName, @NonNull String resourceType,
+        @NonNull String resourceName, @NonNull Set<String> roleNames) {
+        if (roleNames.size() > 1) {
+            throw new IllegalArgumentException("Currently a single role only is supported. "
+                + "Future implementations will allow for multiple roles.");
+        }
+
+        List<RoleBasedAccessRecord> roleBasedAccessRecords = jdbi.withExtension(AccessManagementRepository.class,
+            dao -> dao.getRolePermissions(serviceName, resourceType, resourceName, roleNames.iterator().next()));
+
+        if (roleBasedAccessRecords.isEmpty()) {
+            return null;
+        }
+
+        return roleBasedAccessRecords.stream()
+            .collect(Collectors.toMap(RoleBasedAccessRecord::getAttributeAsPointer,
+                RoleBasedAccessRecord::getPermissionsAsSet));
     }
 }
