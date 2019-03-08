@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.amlib.enums.Permission;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,42 @@ public class FilterService {
         if (!nodesWithRead.contains(WHOLE_RESOURCE_POINTER)) {
             List<JsonPointer> uniqueNodesWithRead = reducePointersToUniqueList(nodesWithRead);
             log.debug("> Unique nodes with READ access: " + uniqueNodesWithRead);
+
+            String node = uniqueNodesWithRead.iterator().next().toString();
+
+            //
+            // Logic for Collections in JsonNode.
+            //
+
+            if (node.contains("@")) {
+                //   /others[@id=1]
+                String attribute = node.substring(0, node.indexOf("[")).replace("/", "");
+                //   others
+                String path = node.substring(0, node.indexOf("="))
+                    .substring(node.indexOf("["))
+                    .replace("@", "")
+                    .replace("[", "");
+                //    id
+                String id = node.substring(node.indexOf("=") + 1).replace("]", "");
+                //   "873b"
+
+                //finds correct item in collection based on id.
+                List<JsonNode> itemInCollection = resourceCopy.findValue(attribute).findParents(path).stream()
+                    .filter(x -> x.findPath(path).toString().equals("\"" + id + "\""))
+                    .collect(Collectors.toList());
+
+                //replaces others object with itemInCollection.
+                ((ObjectNode) resourceCopy).replace("others", itemInCollection.iterator().next());
+
+                //removes other fields without read access.
+                retainFieldsWithReadPermission(resourceCopy, Collections.singletonList(JsonPointer.valueOf("/others")));
+
+                return resourceCopy;
+            }
+
+            //
+            //
+            //
 
             retainFieldsWithReadPermission(resourceCopy, uniqueNodesWithRead);
         }
