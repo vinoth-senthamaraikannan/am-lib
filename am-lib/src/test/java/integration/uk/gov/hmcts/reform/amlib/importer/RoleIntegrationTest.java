@@ -34,7 +34,6 @@ class RoleIntegrationTest extends IntegrationBaseTest {
 
         Role role = databaseHelper.getRole(ROLE_NAME);
         assertThat(role).isNotNull();
-        assertThat(role.getRoleName()).isEqualTo(ROLE_NAME);
         assertThat(role.getRoleType()).isEqualTo(RoleType.RESOURCE);
         assertThat(role.getSecurityClassification()).isEqualTo(SecurityClassification.PRIVATE);
         assertThat(role.getAccessManagementType()).isEqualTo(AccessType.EXPLICIT);

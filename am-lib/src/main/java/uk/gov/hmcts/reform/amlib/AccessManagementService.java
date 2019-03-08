@@ -117,6 +117,22 @@ public class AccessManagementService {
     }
 
     /**
+     * Filters a list of {@link JsonNode} to remove fields that user has no access to (no READ permission) and returns
+     * an envelope response consisting of resourceId, filtered json and permissions for attributes.
+     *
+     * @param userId    accessor ID
+     * @param userRoles accessor roles
+     * @param resources envelope {@link Resource} and corresponding metadata
+     * @return envelope list of {@link FilterResourceResponse} with resource ID, filtered JSON and map of permissions
+     *     if access to resource is configured, otherwise null.
+     */
+    public List<FilterResourceResponse> filterResource(String userId, Set<String> userRoles, List<Resource> resources) {
+        return resources.stream()
+            .map(resource -> filterResource(userId, userRoles, resource))
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Filters {@link JsonNode} to remove fields that user has no access to (no READ permission). In addition to that
      * method also returns map of all permissions that user has to resource.
      *
