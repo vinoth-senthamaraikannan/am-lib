@@ -13,7 +13,7 @@ public class BenchmarkRunner {
     public static void main(String[] args) throws IOException, RunnerException {
         Options opt = new OptionsBuilder()
             .include(".*")
-            .warmupIterations(5)
+            .warmupIterations(10)
             .measurementIterations(100)
             .forks(1)
             .build();

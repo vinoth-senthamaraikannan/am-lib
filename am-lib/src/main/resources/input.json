@@ -14,5 +14,15 @@
       "postcode": "SA1"
     }
   },
-  "amount": 100
+  "amount": 100,
+  "others": [
+    {
+      "id": "1",
+      "data": {}
+    },
+    {
+      "id": "2",
+      "data": {}
+    }
+  ]
 }

@@ -15,10 +15,11 @@ public class SpikeSetup {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public JsonNode inputJson;
+    public JsonNode inputCopy;
 
     @Setup(Level.Invocation)
     public void setup() throws IOException {
         inputJson = mapper.readTree(ClassLoader.getSystemResource("input.json"));
-
+        inputCopy = inputJson.deepCopy();
     }
 }
