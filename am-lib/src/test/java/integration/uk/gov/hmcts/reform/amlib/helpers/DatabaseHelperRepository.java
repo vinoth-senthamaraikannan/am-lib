@@ -5,12 +5,15 @@ import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
+import uk.gov.hmcts.reform.amlib.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.models.ResourceAttribute;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 import uk.gov.hmcts.reform.amlib.models.Role;
 import uk.gov.hmcts.reform.amlib.models.Service;
 import uk.gov.hmcts.reform.amlib.repositories.mappers.JsonPointerMapper;
 import uk.gov.hmcts.reform.amlib.repositories.mappers.PermissionSetMapper;
+
+import java.util.List;
 
 @SuppressWarnings({"PMD", "LineLength"})
 @RegisterColumnMapper(JsonPointerMapper.class)
@@ -54,6 +57,11 @@ public interface DatabaseHelperRepository {
     @SqlQuery("select count(1) from access_management "
         + "where resource_id = :resourceId")
     int countExplicitPermissions(String resourceId);
+
+    @SqlQuery("select * from access_management "
+        + "where resource_id = :resourceId")
+    @RegisterConstructorMapper(ExplicitAccessRecord.class)
+    List<ExplicitAccessRecord> findExplicitPermissions(String resourceId);
 
     @SqlQuery("select count(1) from default_permissions_for_roles "
         + "where service_name = :serviceName "
