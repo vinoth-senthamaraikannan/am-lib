@@ -1,8 +1,8 @@
-package uk.gov.hmcts.reform.amlib.utils;
+package uk.gov.hmcts.reform.amlib.models;
 
 import java.util.Map;
 
-public class Pair<K, V> implements Map.Entry<K, V> {
+public final class Pair<K, V> implements Map.Entry<K, V> {
     private final K key;
     private V value;
 

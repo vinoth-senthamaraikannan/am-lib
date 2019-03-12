@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Resource {
+public final class Resource {
     private final String resourceId;
     private final ResourceDefinition type;
     private final JsonNode resourceJson;
