@@ -61,6 +61,7 @@ public class AccessManagementService {
 
     /**
      * Grants explicit access to resource accordingly to record configuration.
+     * Access can be granted to a user or multiple users for a resource.
      *
      * <p>Operation is performed in a transaction so that if not all records can be created then whole grant will fail.
      *
@@ -69,23 +70,24 @@ public class AccessManagementService {
      */
     @AuditLog("explicit access granted to resource '{{accessGrant.resourceId}}' "
         + "defined as '{{accessGrant.serviceName}}|{{accessGrant.resourceType}}|{{accessGrant.resourceName}}' "
-        + "for accessor '{{accessGrant.accessorId}}': {{accessGrant.attributePermissions}}")
+        + "for accessors '{{accessGrant.accessorIds}}': {{accessGrant.attributePermissions}}")
     public void grantExplicitResourceAccess(@NotNull @Valid ExplicitAccessGrant accessGrant) {
         jdbi.useTransaction(handle -> {
             AccessManagementRepository dao = handle.attach(AccessManagementRepository.class);
-            accessGrant.getAttributePermissions().entrySet().stream().map(attributePermission ->
-                ExplicitAccessRecord.builder()
-                    .resourceId(accessGrant.getResourceId())
-                    .accessorId(accessGrant.getAccessorId())
-                    .permissions(attributePermission.getValue())
-                    .accessType(accessGrant.getAccessType())
-                    .serviceName(accessGrant.getServiceName())
-                    .resourceType(accessGrant.getResourceType())
-                    .resourceName(accessGrant.getResourceName())
-                    .attribute(attributePermission.getKey())
-                    .securityClassification(accessGrant.getSecurityClassification())
-                    .build())
-                .forEach(dao::createAccessManagementRecord);
+            accessGrant.getAccessorIds().forEach(accessorIds ->
+                accessGrant.getAttributePermissions().entrySet().stream().map(attributePermission ->
+                    ExplicitAccessRecord.builder()
+                        .resourceId(accessGrant.getResourceId())
+                        .accessorId(accessorIds)
+                        .permissions(attributePermission.getValue())
+                        .accessType(accessGrant.getAccessType())
+                        .serviceName(accessGrant.getServiceName())
+                        .resourceType(accessGrant.getResourceType())
+                        .resourceName(accessGrant.getResourceName())
+                        .attribute(attributePermission.getKey())
+                        .securityClassification(accessGrant.getSecurityClassification())
+                        .build())
+                    .forEach(dao::createAccessManagementRecord));
         });
     }
 
