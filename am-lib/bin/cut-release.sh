@@ -14,6 +14,8 @@ set -eu
 #   - conventional-recommended-bump (provides conventional-recommended-bump command)
 #   - conventional-changelog-cli (provides conventional-changelog command)
 #   - conventional-github-releaser (provides conventional-github-releaser command)
+#
+# Above should be installed using either Yarn or NPM in global scope.
 
 declare dir=$(dirname ${0})
 declare preset=angular
@@ -103,8 +105,8 @@ function create_github_release() {
 
 validate_dependencies && validate_environment_variables
 
-declare current_version=$(get_current_version)
-declare next_version=$(calculate_next_version ${current_version})
+current_version=$(get_current_version)
+next_version=$(calculate_next_version ${current_version})
 
 read -p "Preparing release ${next_version} (bump from ${current_version}). Do you wish to continue (y/n)? " choice
 case ${choice} in
@@ -115,9 +117,11 @@ case ${choice} in
     create_github_release
     ;;
   n|N)
+    echo 'Release process aborted'
     exit 0
     ;;
   *)
-    exit 1
+    echo 'Unrecognised option, try again...'
+    ./$0
     ;;
 esac
