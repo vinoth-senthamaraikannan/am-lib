@@ -9,8 +9,8 @@ import scala.concurrent.duration._
 
 class PipelineSimulation extends Simulation {
 
-  private val httpProtocol = http.baseURL(Environment.baseUrl)
-  private val loadProfile = rampUsers(10).over(2.seconds)
+  private val httpProtocol = http.baseUrl(Environment.baseUrl)
+  private val loadProfile = rampUsers(10) during 2.seconds
 
   /* load profile and assertions to be changed once NFRs are defined
       this is just an exemplary simulation */

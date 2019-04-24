@@ -9,7 +9,7 @@ object AccessManagement {
   private def postRequest(url: String, body: String): HttpRequestBuilder =
     http(url)
       .post("/lib" + url)
-      .body(ElFileBody(body)).asJSON
+      .body(ElFileBody(body)).asJson
       .check(status.is(200))
 
   def createResourceAssess: HttpRequestBuilder =
