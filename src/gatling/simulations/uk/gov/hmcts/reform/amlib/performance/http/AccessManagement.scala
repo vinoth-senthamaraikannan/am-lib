@@ -1,4 +1,4 @@
-package gov.hmcts.reform.amlib.performance.http
+package uk.gov.hmcts.reform.amlib.performance.http
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._

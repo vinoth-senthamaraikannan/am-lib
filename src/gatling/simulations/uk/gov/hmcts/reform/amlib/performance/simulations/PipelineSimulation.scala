@@ -1,6 +1,6 @@
-package gov.hmcts.reform.amlib.performance.simulations
+package uk.gov.hmcts.reform.amlib.performance.simulations
 
-import gov.hmcts.reform.amlib.performance.scenarios.BasicScenarios
+import uk.gov.hmcts.reform.amlib.performance.scenarios.BasicScenarios
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import uk.gov.hmcts.reform.amlib.performance.utils.Environment
