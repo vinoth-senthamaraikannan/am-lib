@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.amlib.internal.models.Role;
 import uk.gov.hmcts.reform.amlib.internal.models.RoleBasedAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.repositories.mappers.JsonPointerMapper;
 import uk.gov.hmcts.reform.amlib.internal.repositories.mappers.PermissionSetMapper;
+import uk.gov.hmcts.reform.amlib.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 
@@ -50,11 +51,13 @@ public interface AccessManagementRepository {
     @RegisterConstructorMapper(RoleBasedAccessRecord.class)
     List<RoleBasedAccessRecord> getRolePermissions(@BindBean ResourceDefinition resourceDefinition, String roleName);
 
-    @SqlQuery("select distinct ra.service_name, ra.resource_type, ra.resource_name, ra.attribute, ra.default_security_classification from resource_attributes ra"
+
+    //TODO: sql method update
+    @SqlQuery("select distinct ra.attribute, ra.default_security_classification, d.permissions from resource_attributes ra"
         + " join default_permissions_for_roles as d on ra.service_name = d.service_name and ra.resource_type = d.resource_type and ra.resource_name = d.resource_name and ra.attribute = d.attribute"
         + " where ra.service_name = :serviceName and ra.resource_type = :resourceType and ra.resource_name = :resourceName and d.role_name = :roleName")
-    @RegisterConstructorMapper(ResourceAttribute.class)
-    List<ResourceAttribute> getAttributeSecurityClassificationsForResource(@BindBean ResourceDefinition resourceDefinition, String roleName);
+    @RegisterConstructorMapper(AttributeData.class)
+    List<AttributeData> getAttributeSecurityClassificationsForResource(@BindBean ResourceDefinition resourceDefinition, String roleName, @BindList Set<SecurityClassification> securityClassifications);
 
     @SqlQuery("select * from roles where role_name in (<userRoles>) and cast(access_type as text) in (<accessTypes>)")
     @RegisterConstructorMapper(Role.class)

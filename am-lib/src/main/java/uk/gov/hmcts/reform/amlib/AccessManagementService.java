@@ -15,8 +15,10 @@ import uk.gov.hmcts.reform.amlib.internal.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.models.ResourceAttribute;
 import uk.gov.hmcts.reform.amlib.internal.models.Role;
 import uk.gov.hmcts.reform.amlib.internal.repositories.AccessManagementRepository;
+import uk.gov.hmcts.reform.amlib.internal.utils.SecurityClassifications;
 import uk.gov.hmcts.reform.amlib.models.AccessEnvelope;
 import uk.gov.hmcts.reform.amlib.models.AttributeAccessDefinition;
+import uk.gov.hmcts.reform.amlib.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessGrant;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.FilteredResourceEnvelope;
@@ -259,18 +261,8 @@ public class AccessManagementService {
         + "{{result}}")
     public RolePermissions getRolePermissions(@NotNull @Valid ResourceDefinition resourceDefinition,
                                               @NotBlank String roleName) {
-        Map<JsonPointer, Set<Permission>> permissions = jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getRolePermissions(resourceDefinition, roleName).stream().collect(getMapCollector()));
 
-        Map<JsonPointer, SecurityClassification> securityClassifications =
-            jdbi.withExtension(AccessManagementRepository.class, dao ->
-                dao.getAttributeSecurityClassificationsForResource(resourceDefinition, roleName).stream()
-                    .collect(getResourceAttributeCollector())
-            );
-
-        if (permissions.isEmpty() & securityClassifications.isEmpty()) {
-            return null;
-        }
+        //access type and sec class for role
 
         Map.Entry<AccessType, SecurityClassification> roleData =
             jdbi.withExtension(AccessManagementRepository.class, dao ->
@@ -278,16 +270,47 @@ public class AccessManagementService {
                 .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification))
                 .entrySet().iterator().next();
 
-        securityClassifications.entrySet().removeIf(
-            entry -> !entry.getValue().isVisible(roleData.getValue().getHierarchy()));
+        // calculate visible sec class
 
-        permissions.keySet().retainAll(securityClassifications.keySet());
+        Set<SecurityClassification> visibleSecurityClassifications =
+            SecurityClassifications.fromValueOf(roleData.getValue().getHierarchy());
+
+        // TODO:fetch attributes that are visible. Update SQL query to use visibleSecurityClassifications. Create new Object to hold JsonPointer, SecurityClassification and Permission.
+
+        List<AttributeData> attributeData = jdbi.withExtension(AccessManagementRepository.class, dao ->
+            dao.getAttributeSecurityClassificationsForResource(resourceDefinition, roleName, visibleSecurityClassifications));
+
+        System.out.println("attributeData = " + attributeData);
+
+        ///////////////////////////////
+
+        //OLD CODE//////////////////////////////
+
+//        Map<JsonPointer, Set<Permission>> permissions = jdbi.withExtension(AccessManagementRepository.class, dao ->
+//            dao.getRolePermissions(resourceDefinition, roleName).stream().collect(getMapCollector()));
+//
+//        Map<JsonPointer, SecurityClassification> securityClassifications =
+//            jdbi.withExtension(AccessManagementRepository.class, dao ->
+//                dao.getAttributeSecurityClassificationsForResource(resourceDefinition, roleName).stream()
+//                    .collect(getResourceAttributeCollector())
+//            );
+//
+//        if (permissions.isEmpty() && securityClassifications.isEmpty()) {
+//            return null;
+//        }
+//
+//        securityClassifications.entrySet().removeIf(
+//            entry -> !entry.getValue().isVisible(roleData.getValue().getHierarchy()));
+//
+//        permissions.keySet().retainAll(securityClassifications.keySet());
+
+        ////////////////////////////
 
         return RolePermissions.builder()
             .accessType(roleData.getKey())
-            .permissions(permissions)
+            .permissions(null)
             .roleSecurityClassification(roleData.getValue())
-            .securityClassification(securityClassifications)
+            .securityClassification(null)
             .build();
     }
 
@@ -307,11 +330,8 @@ public class AccessManagementService {
                 .max()
                 .orElseThrow(NoSuchElementException::new));
 
-        Set<SecurityClassification> visibleSecurityClassifications = EnumSet.allOf(SecurityClassification.class)
-            .stream()
-            .filter(securityClassification ->
-                securityClassification.isVisible(maxSecurityClassificationForRole))
-            .collect(toSet());
+        Set<SecurityClassification> visibleSecurityClassifications =
+            SecurityClassifications.fromValueOf(maxSecurityClassificationForRole);
 
         return jdbi.withExtension(AccessManagementRepository.class, dao ->
             dao.getResourceDefinitionsWithRootCreatePermission(userRoles, visibleSecurityClassifications));
