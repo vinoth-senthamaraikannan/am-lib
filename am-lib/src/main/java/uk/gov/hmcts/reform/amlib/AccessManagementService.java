@@ -303,11 +303,9 @@ public class AccessManagementService {
                 .max()
                 .orElseThrow(NoSuchElementException::new));
 
-        Set<SecurityClassification> visibleSecurityClassifications =
-            SecurityClassifications.fromValueOf(maxSecurityClassificationForRole);
-
         return jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getResourceDefinitionsWithRootCreatePermission(userRoles, visibleSecurityClassifications));
+            dao.getResourceDefinitionsWithRootCreatePermission(
+                userRoles, SecurityClassifications.fromValueOf(maxSecurityClassificationForRole)));
     }
 
     private Collector<AttributeAccessDefinition, ?, Map<JsonPointer, Set<Permission>>> getMapCollector() {
