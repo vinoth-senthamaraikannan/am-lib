@@ -1,10 +1,12 @@
 package uk.gov.hmcts.reform.amlib.internal.utils;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +23,36 @@ class SecurityClassificationTest {
     void whenRoleSecurityClassificationIsHighEnoughResourceShouldBeVisible(boolean expectedResult, SecurityClassification roleClassification, SecurityClassification resourceClassification) {
         boolean isVisible = resourceClassification.isVisible(roleClassification.getHierarchy());
         assertThat(isVisible).isEqualTo(expectedResult);
+    }
+
+    @Test
+    void fromValueOfShouldReturnSetOfSecurityClassificationsForNone() {
+        Set<SecurityClassification> securityClassifications = SecurityClassifications.fromValueOf(NONE.getHierarchy());
+
+        assertThat(securityClassifications).containsExactly(NONE);
+    }
+
+    @Test
+    void fromValueOfShouldReturnSetOfSecurityClassificationsForPublic() {
+        Set<SecurityClassification> securityClassifications = SecurityClassifications.fromValueOf(PUBLIC.getHierarchy());
+
+        assertThat(securityClassifications).containsExactlyInAnyOrder(PUBLIC, NONE);
+    }
+
+    @Test
+    void fromValueOfShouldReturnSetOfSecurityClassificationsForPrivate() {
+        Set<SecurityClassification> securityClassifications =
+            SecurityClassifications.fromValueOf(PRIVATE.getHierarchy());
+
+        assertThat(securityClassifications).containsExactlyInAnyOrder(PRIVATE, PUBLIC, NONE);
+    }
+
+    @Test
+    void fromValueOfShouldReturnSetOfSecurityClassificationsForRestricted() {
+        Set<SecurityClassification> securityClassifications =
+            SecurityClassifications.fromValueOf(RESTRICTED.getHierarchy());
+
+        assertThat(securityClassifications).containsExactlyInAnyOrder(RESTRICTED, PRIVATE, PUBLIC, NONE);
     }
 
     private static Stream<Arguments> createArguments() {

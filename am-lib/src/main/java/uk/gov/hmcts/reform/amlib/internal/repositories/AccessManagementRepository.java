@@ -8,13 +8,12 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import uk.gov.hmcts.reform.amlib.enums.AccessType;
 import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
+import uk.gov.hmcts.reform.amlib.internal.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.internal.models.ExplicitAccessRecord;
-import uk.gov.hmcts.reform.amlib.internal.models.ResourceAttribute;
 import uk.gov.hmcts.reform.amlib.internal.models.Role;
 import uk.gov.hmcts.reform.amlib.internal.models.RoleBasedAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.repositories.mappers.JsonPointerMapper;
 import uk.gov.hmcts.reform.amlib.internal.repositories.mappers.PermissionSetMapper;
-import uk.gov.hmcts.reform.amlib.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 
@@ -51,11 +50,9 @@ public interface AccessManagementRepository {
     @RegisterConstructorMapper(RoleBasedAccessRecord.class)
     List<RoleBasedAccessRecord> getRolePermissions(@BindBean ResourceDefinition resourceDefinition, String roleName);
 
-
-    //TODO: sql method update
-    @SqlQuery("select distinct ra.attribute, ra.default_security_classification, d.permissions from resource_attributes ra"
-        + " join default_permissions_for_roles as d on ra.service_name = d.service_name and ra.resource_type = d.resource_type and ra.resource_name = d.resource_name and ra.attribute = d.attribute"
-        + " where ra.service_name = :serviceName and ra.resource_type = :resourceType and ra.resource_name = :resourceName and d.role_name = :roleName")
+    @SqlQuery("select distinct d.attribute, d.permissions, ra.default_security_classification from default_permissions_for_roles d"
+        + " join resource_attributes ra on d.service_name = ra.service_name and d.resource_type = ra.resource_type and d.resource_name = ra.resource_name and d.attribute = d.attribute"
+        + " where d.service_name = :serviceName and d.resource_Type = :resourceType and d.resource_name = :resourceName and d.role_name = :roleName and cast(ra.default_security_classification as text) in (<securityClassifications>)")
     @RegisterConstructorMapper(AttributeData.class)
     List<AttributeData> getAttributeSecurityClassificationsForResource(@BindBean ResourceDefinition resourceDefinition, String roleName, @BindList Set<SecurityClassification> securityClassifications);
 

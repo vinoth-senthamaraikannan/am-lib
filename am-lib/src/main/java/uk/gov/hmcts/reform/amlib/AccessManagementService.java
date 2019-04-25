@@ -11,14 +11,13 @@ import uk.gov.hmcts.reform.amlib.exceptions.PersistenceException;
 import uk.gov.hmcts.reform.amlib.internal.FilterService;
 import uk.gov.hmcts.reform.amlib.internal.PermissionsService;
 import uk.gov.hmcts.reform.amlib.internal.aspects.AuditLog;
+import uk.gov.hmcts.reform.amlib.internal.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.internal.models.ExplicitAccessRecord;
-import uk.gov.hmcts.reform.amlib.internal.models.ResourceAttribute;
 import uk.gov.hmcts.reform.amlib.internal.models.Role;
 import uk.gov.hmcts.reform.amlib.internal.repositories.AccessManagementRepository;
 import uk.gov.hmcts.reform.amlib.internal.utils.SecurityClassifications;
 import uk.gov.hmcts.reform.amlib.models.AccessEnvelope;
 import uk.gov.hmcts.reform.amlib.models.AttributeAccessDefinition;
-import uk.gov.hmcts.reform.amlib.models.AttributeData;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessGrant;
 import uk.gov.hmcts.reform.amlib.models.ExplicitAccessMetadata;
 import uk.gov.hmcts.reform.amlib.models.FilteredResourceEnvelope;
@@ -27,7 +26,6 @@ import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 import uk.gov.hmcts.reform.amlib.models.RolePermissions;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -261,56 +259,31 @@ public class AccessManagementService {
         + "{{result}}")
     public RolePermissions getRolePermissions(@NotNull @Valid ResourceDefinition resourceDefinition,
                                               @NotBlank String roleName) {
-
-        //access type and sec class for role
-
-        Map.Entry<AccessType, SecurityClassification> roleData =
+        Map<AccessType, SecurityClassification> roleData =
             jdbi.withExtension(AccessManagementRepository.class, dao ->
                 dao.getRoles(Collections.singleton(roleName), Stream.of(EXPLICIT, ROLE_BASED).collect(toSet())))
-                .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification))
-                .entrySet().iterator().next();
+                .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification));
 
-        // calculate visible sec class
-
-        Set<SecurityClassification> visibleSecurityClassifications =
-            SecurityClassifications.fromValueOf(roleData.getValue().getHierarchy());
-
-        // TODO:fetch attributes that are visible. Update SQL query to use visibleSecurityClassifications. Create new Object to hold JsonPointer, SecurityClassification and Permission.
+        if (roleData.isEmpty()) {
+            return null;
+        }
 
         List<AttributeData> attributeData = jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getAttributeSecurityClassificationsForResource(resourceDefinition, roleName, visibleSecurityClassifications));
+            dao.getAttributeSecurityClassificationsForResource(
+                resourceDefinition, roleName, SecurityClassifications.fromValueOf(
+                    roleData.entrySet().iterator().next().getValue().getHierarchy())));
 
-        System.out.println("attributeData = " + attributeData);
-
-        ///////////////////////////////
-
-        //OLD CODE//////////////////////////////
-
-//        Map<JsonPointer, Set<Permission>> permissions = jdbi.withExtension(AccessManagementRepository.class, dao ->
-//            dao.getRolePermissions(resourceDefinition, roleName).stream().collect(getMapCollector()));
-//
-//        Map<JsonPointer, SecurityClassification> securityClassifications =
-//            jdbi.withExtension(AccessManagementRepository.class, dao ->
-//                dao.getAttributeSecurityClassificationsForResource(resourceDefinition, roleName).stream()
-//                    .collect(getResourceAttributeCollector())
-//            );
-//
-//        if (permissions.isEmpty() && securityClassifications.isEmpty()) {
-//            return null;
-//        }
-//
-//        securityClassifications.entrySet().removeIf(
-//            entry -> !entry.getValue().isVisible(roleData.getValue().getHierarchy()));
-//
-//        permissions.keySet().retainAll(securityClassifications.keySet());
-
-        ////////////////////////////
+        if (attributeData.isEmpty()) {
+            return null;
+        }
 
         return RolePermissions.builder()
-            .accessType(roleData.getKey())
-            .permissions(null)
-            .roleSecurityClassification(roleData.getValue())
-            .securityClassification(null)
+            .accessType(roleData.entrySet().iterator().next().getKey())
+            .permissions(attributeData.stream()
+                .collect(toMap(AttributeData::getAttribute, AttributeData::getPermissions)))
+            .roleSecurityClassification(roleData.entrySet().iterator().next().getValue())
+            .securityClassification(attributeData.stream()
+                .collect(toMap(AttributeData::getAttribute, AttributeData::getDefaultSecurityClassification)))
             .build();
     }
 
@@ -339,9 +312,5 @@ public class AccessManagementService {
 
     private Collector<AttributeAccessDefinition, ?, Map<JsonPointer, Set<Permission>>> getMapCollector() {
         return toMap(AttributeAccessDefinition::getAttribute, AttributeAccessDefinition::getPermissions);
-    }
-
-    private Collector<ResourceAttribute, ?, Map<JsonPointer, SecurityClassification>> getResourceAttributeCollector() {
-        return toMap(ResourceAttribute::getAttribute, ResourceAttribute::getDefaultSecurityClassification);
     }
 }

@@ -7,13 +7,19 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 
-public class SecurityClassifications {
+public final class SecurityClassifications {
 
     private SecurityClassifications() {
         //NO-OP
     }
 
-    //TODO: write tests for fromValueOf method.
+    /**
+     * Builds a set of security classifications including and below a given hierarchy.
+     *
+     * @param securityClassificationForRole integer value of security classification defined in
+     * {@link SecurityClassification}
+     * @return a set of security classifications
+     */
     public static Set<SecurityClassification> fromValueOf(int securityClassificationForRole) {
         return EnumSet.allOf(SecurityClassification.class)
             .stream()
