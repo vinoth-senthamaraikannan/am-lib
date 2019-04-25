@@ -10,11 +10,11 @@ import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
 import uk.gov.hmcts.reform.amlib.exceptions.PersistenceException;
 import uk.gov.hmcts.reform.amlib.internal.FilterService;
 import uk.gov.hmcts.reform.amlib.internal.PermissionsService;
+import uk.gov.hmcts.reform.amlib.internal.SecurityClassificationService;
 import uk.gov.hmcts.reform.amlib.internal.aspects.AuditLog;
 import uk.gov.hmcts.reform.amlib.internal.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.models.ResourceAttribute;
 import uk.gov.hmcts.reform.amlib.internal.models.Role;
-import uk.gov.hmcts.reform.amlib.internal.models.RoleBasedAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.repositories.AccessManagementRepository;
 import uk.gov.hmcts.reform.amlib.models.AccessEnvelope;
 import uk.gov.hmcts.reform.amlib.models.AttributeAccessDefinition;
@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
@@ -45,6 +44,7 @@ import javax.validation.constraints.NotNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static uk.gov.hmcts.reform.amlib.enums.AccessType.EXPLICIT;
 import static uk.gov.hmcts.reform.amlib.enums.AccessType.ROLE_BASED;
@@ -54,6 +54,7 @@ public class AccessManagementService {
 
     private final FilterService filterService = new FilterService();
     private final PermissionsService permissionsService = new PermissionsService();
+    private final SecurityClassificationService securityClassificationService = new SecurityClassificationService();
 
     private final Jdbi jdbi;
 
@@ -248,7 +249,7 @@ public class AccessManagementService {
     }
 
     /**
-     * Retrieves a list of {@link RoleBasedAccessRecord } and returns attribute and permissions values.
+     * Retrieves {@link RolePermissions} filtered by role security classification for a specific resource and role.
      *
      * @param resourceDefinition {@link ResourceDefinition} a unique service name, resource type and resource name
      * @param roleName           user role name
@@ -273,14 +274,25 @@ public class AccessManagementService {
             return null;
         }
 
-        AccessType accessType = jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getRoles(Collections.singleton(roleName), Stream.of(EXPLICIT, ROLE_BASED).collect(toSet())))
-            .stream().findFirst().map(Role::getAccessType).get();
+        Map.Entry<AccessType, SecurityClassification> roleData =
+            jdbi.withExtension(AccessManagementRepository.class, dao ->
+                dao.getRoles(Collections.singleton(roleName), Stream.of(EXPLICIT, ROLE_BASED).collect(toSet())))
+                .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification))
+                .entrySet().iterator().next();
+
+        Map<JsonPointer, Map<SecurityClassification, Set<Permission>>> attributeData =
+            securityClassificationService.removeEntriesWithInsufficientSecurityClassification(
+                permissions, securityClassifications, roleData.getValue());
 
         return RolePermissions.builder()
-            .accessType(accessType)
-            .permissions(permissions)
-            .securityClassification(securityClassifications)
+            .accessType(roleData.getKey())
+            .permissions(attributeData.entrySet().stream().collect(toMap(
+                Map.Entry::getKey,
+                e -> permissions.get(e.getKey()))))
+            .roleSecurityClassification(roleData.getValue())
+            .securityClassification(attributeData.entrySet().stream().collect(toMap(
+                Map.Entry::getKey,
+                e -> securityClassifications.get(e.getKey()))))
             .build();
     }
 
@@ -311,10 +323,10 @@ public class AccessManagementService {
     }
 
     private Collector<AttributeAccessDefinition, ?, Map<JsonPointer, Set<Permission>>> getMapCollector() {
-        return Collectors.toMap(AttributeAccessDefinition::getAttribute, AttributeAccessDefinition::getPermissions);
+        return toMap(AttributeAccessDefinition::getAttribute, AttributeAccessDefinition::getPermissions);
     }
 
     private Collector<ResourceAttribute, ?, Map<JsonPointer, SecurityClassification>> getResourceAttributeCollector() {
-        return Collectors.toMap(ResourceAttribute::getAttribute, ResourceAttribute::getDefaultSecurityClassification);
+        return toMap(ResourceAttribute::getAttribute, ResourceAttribute::getDefaultSecurityClassification);
     }
 }

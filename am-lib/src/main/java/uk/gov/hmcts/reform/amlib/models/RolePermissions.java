@@ -15,5 +15,6 @@ import java.util.Set;
 public final class RolePermissions {
     private final Map<JsonPointer, Set<Permission>> permissions;
     private final AccessType accessType;
+    private final SecurityClassification roleSecurityClassification;
     private final Map<JsonPointer, SecurityClassification> securityClassification;
 }

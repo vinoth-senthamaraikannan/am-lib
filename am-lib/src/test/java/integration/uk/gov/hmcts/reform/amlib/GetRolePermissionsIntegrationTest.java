@@ -34,11 +34,12 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @BeforeEach
     void setUp() {
         Map.Entry<Set<Permission>, SecurityClassification> readPermission = new Pair<>(READ_PERMISSION, PUBLIC);
+        Map.Entry<Set<Permission>, SecurityClassification> readPermissionRes = new Pair<>(READ_PERMISSION, PUBLIC);
 
         Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> attributePermissionsForRole =
             ImmutableMap.of(
                 JsonPointer.valueOf("/child"), readPermission,
-                JsonPointer.valueOf("/parent/age"), readPermission
+                JsonPointer.valueOf("/parent/age"), readPermissionRes
             );
 
         importerService.grantDefaultPermission(
@@ -85,6 +86,8 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
             .containsEntry(JsonPointer.valueOf("/parent/age"), PUBLIC);
 
         assertThat(rolePermissions.getAccessType()).isEqualTo(ROLE_BASED);
+
+        assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
     }
 
     @Test
