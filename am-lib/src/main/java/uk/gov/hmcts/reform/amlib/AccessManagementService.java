@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
 import uk.gov.hmcts.reform.amlib.exceptions.PersistenceException;
 import uk.gov.hmcts.reform.amlib.internal.FilterService;
 import uk.gov.hmcts.reform.amlib.internal.PermissionsService;
-import uk.gov.hmcts.reform.amlib.internal.SecurityClassificationService;
 import uk.gov.hmcts.reform.amlib.internal.aspects.AuditLog;
 import uk.gov.hmcts.reform.amlib.internal.models.ExplicitAccessRecord;
 import uk.gov.hmcts.reform.amlib.internal.models.ResourceAttribute;
@@ -54,7 +53,6 @@ public class AccessManagementService {
 
     private final FilterService filterService = new FilterService();
     private final PermissionsService permissionsService = new PermissionsService();
-    private final SecurityClassificationService securityClassificationService = new SecurityClassificationService();
 
     private final Jdbi jdbi;
 
@@ -280,19 +278,16 @@ public class AccessManagementService {
                 .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification))
                 .entrySet().iterator().next();
 
-        Map<JsonPointer, Map<SecurityClassification, Set<Permission>>> attributeData =
-            securityClassificationService.removeEntriesWithInsufficientSecurityClassification(
-                permissions, securityClassifications, roleData.getValue());
+        securityClassifications.entrySet().removeIf(
+            entry -> !entry.getValue().isVisible(roleData.getValue().getHierarchy()));
+
+        permissions.keySet().retainAll(securityClassifications.keySet());
 
         return RolePermissions.builder()
             .accessType(roleData.getKey())
-            .permissions(attributeData.entrySet().stream().collect(toMap(
-                Map.Entry::getKey,
-                e -> permissions.get(e.getKey()))))
+            .permissions(permissions)
             .roleSecurityClassification(roleData.getValue())
-            .securityClassification(attributeData.entrySet().stream().collect(toMap(
-                Map.Entry::getKey,
-                e -> securityClassifications.get(e.getKey()))))
+            .securityClassification(securityClassifications)
             .build();
     }
 
