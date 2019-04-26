@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib.internal.utils;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,11 +29,12 @@ class SecurityClassificationTest {
 
     @ParameterizedTest
     @MethodSource("fromValueArguments")
-    void fromValueOfShouldReturnSetOfSecurityClassifications(FromValueArguments args) {
+    void fromValueOfShouldReturnSetOfSecurityClassifications(SecurityClassification securityClassification,
+                                                             Set<SecurityClassification> expectedSecurityClassifications) {
         Set<SecurityClassification> securityClassifications =
-            SecurityClassifications.fromValueOf(args.roleSecurityClassification.getHierarchy());
+            SecurityClassifications.getVisibleSecurityClassifications(securityClassification.getHierarchy());
 
-        assertThat(securityClassifications).containsExactlyInAnyOrder(args.securityClassifications);
+        assertThat(securityClassifications).isEqualTo(expectedSecurityClassifications);
     }
 
     private static Stream<Arguments> visibleArguments() {
@@ -55,23 +57,12 @@ class SecurityClassificationTest {
         );
     }
 
-    private static Stream<FromValueArguments> fromValueArguments() {
+    private static Stream<Arguments> fromValueArguments() {
         return Stream.of(
-            new FromValueArguments(NONE, NONE),
-            new FromValueArguments(PUBLIC, NONE, PUBLIC),
-            new FromValueArguments(PRIVATE, NONE, PUBLIC, PRIVATE),
-            new FromValueArguments(RESTRICTED, NONE, PUBLIC, PRIVATE, RESTRICTED)
+            Arguments.of(NONE, ImmutableSet.of(NONE)),
+            Arguments.of(PUBLIC, ImmutableSet.of(NONE, PUBLIC)),
+            Arguments.of(PRIVATE, ImmutableSet.of(NONE, PUBLIC, PRIVATE)),
+            Arguments.of(RESTRICTED, ImmutableSet.of(NONE, PUBLIC, PRIVATE, RESTRICTED))
         );
-    }
-
-    private static class FromValueArguments {
-        private final SecurityClassification roleSecurityClassification;
-        private final SecurityClassification[] securityClassifications;
-
-        private FromValueArguments(SecurityClassification roleSecurityClassification,
-                                   SecurityClassification... securityClassifications) {
-            this.roleSecurityClassification = roleSecurityClassification;
-            this.securityClassifications = securityClassifications;
-        }
     }
 }

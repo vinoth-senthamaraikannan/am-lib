@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.amlib.internal.models;
+package uk.gov.hmcts.reform.amlib.internal.models.query;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import lombok.AllArgsConstructor;

@@ -72,12 +72,12 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
             .containsEntry(JsonPointer.valueOf("/child"), ImmutableSet.of(READ))
             .containsEntry(JsonPointer.valueOf("/parent/age"), ImmutableSet.of(READ));
 
-        assertThat(rolePermissions.getSecurityClassification())
+        assertThat(rolePermissions.getSecurityClassifications())
             .hasSize(2)
             .containsEntry(JsonPointer.valueOf("/child"), PUBLIC)
             .containsEntry(JsonPointer.valueOf("/parent/age"), PUBLIC);
 
-        assertThat(rolePermissions.getAccessType()).isEqualTo(ROLE_BASED);
+        assertThat(rolePermissions.getRoleAccessType()).isEqualTo(ROLE_BASED);
 
         assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
     }
@@ -139,11 +139,11 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
             .hasSize(1)
             .containsEntry(JsonPointer.valueOf(""), ImmutableSet.of(READ));
 
-        assertThat(rolePermissions.getSecurityClassification())
+        assertThat(rolePermissions.getSecurityClassifications())
             .hasSize(1)
             .containsEntry(JsonPointer.valueOf(""), PUBLIC);
 
-        assertThat(rolePermissions.getAccessType()).isEqualTo(ROLE_BASED);
+        assertThat(rolePermissions.getRoleAccessType()).isEqualTo(ROLE_BASED);
 
         assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
     }

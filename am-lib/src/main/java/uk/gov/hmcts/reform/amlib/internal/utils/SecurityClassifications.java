@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.toSet;
 public final class SecurityClassifications {
 
     private SecurityClassifications() {
-        //NO-OP
+        throw new UnsupportedOperationException("Constructing utility class is not supported");
     }
 
     /**
@@ -20,7 +20,7 @@ public final class SecurityClassifications {
      * {@link SecurityClassification}
      * @return a set of security classifications
      */
-    public static Set<SecurityClassification> fromValueOf(int securityClassificationForRole) {
+    public static Set<SecurityClassification> getVisibleSecurityClassifications(int securityClassificationForRole) {
         return EnumSet.allOf(SecurityClassification.class)
             .stream()
             .filter(securityClassification ->
