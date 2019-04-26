@@ -268,7 +268,7 @@ public class AccessManagementService {
         }
 
         List<AttributeData> attributeData = jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getAttributeSecurityClassificationsForResource(
+            dao.getAttributeDataForResource(
                 resourceDefinition, roleName, SecurityClassifications.fromValueOf(
                     roleData.entrySet().iterator().next().getValue().getHierarchy())));
 

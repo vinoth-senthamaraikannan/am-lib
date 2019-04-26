@@ -51,10 +51,10 @@ public interface AccessManagementRepository {
     List<RoleBasedAccessRecord> getRolePermissions(@BindBean ResourceDefinition resourceDefinition, String roleName);
 
     @SqlQuery("select distinct d.attribute, d.permissions, ra.default_security_classification from default_permissions_for_roles d"
-        + " join resource_attributes ra on d.service_name = ra.service_name and d.resource_type = ra.resource_type and d.resource_name = ra.resource_name and d.attribute = d.attribute"
-        + " where d.service_name = :serviceName and d.resource_Type = :resourceType and d.resource_name = :resourceName and d.role_name = :roleName and cast(ra.default_security_classification as text) in (<securityClassifications>)")
+        + " join resource_attributes ra on d.service_name = ra.service_name and d.resource_type = ra.resource_type and d.resource_name = ra.resource_name and d.attribute = ra.attribute"
+        + " where d.service_name = :serviceName and d.resource_Type = :resourceType and d.resource_name = :resourceName and d.role_name = :roleName and cast(default_security_classification as text) in (<securityClassifications>)")
     @RegisterConstructorMapper(AttributeData.class)
-    List<AttributeData> getAttributeSecurityClassificationsForResource(@BindBean ResourceDefinition resourceDefinition, String roleName, @BindList Set<SecurityClassification> securityClassifications);
+    List<AttributeData> getAttributeDataForResource(@BindBean ResourceDefinition resourceDefinition, String roleName, @BindList Set<SecurityClassification> securityClassifications);
 
     @SqlQuery("select * from roles where role_name in (<userRoles>) and cast(access_type as text) in (<accessTypes>)")
     @RegisterConstructorMapper(Role.class)
