@@ -27,6 +27,7 @@ public final class Permissions {
      *
      * @param permissions permission enum values e.g. ("CREATE", "READ") to be converted to integer value
      * @return the sum of permissions
+     *
      * @see Permissions#sumOf(Set)
      */
     public static int sumOf(Permission... permissions) {
@@ -38,6 +39,7 @@ public final class Permissions {
      *
      * @param permissions a set of permission enum values e.g. ("CREATE", "READ") to be converted to integer value
      * @return the sum of permissions
+     *
      * @see Permissions#sumOf(Permission...)
      */
     public static int sumOf(Set<Permission> permissions) {
