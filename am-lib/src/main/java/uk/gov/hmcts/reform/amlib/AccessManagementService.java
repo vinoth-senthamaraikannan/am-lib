@@ -259,10 +259,9 @@ public class AccessManagementService {
         + "{{result}}")
     public RolePermissions getRolePermissions(@NotNull @Valid ResourceDefinition resourceDefinition,
                                               @NotBlank String roleName) {
-        Map<AccessType, SecurityClassification> roleData =
-            jdbi.withExtension(AccessManagementRepository.class, dao ->
-                dao.getRoles(Collections.singleton(roleName), Stream.of(EXPLICIT, ROLE_BASED).collect(toSet())))
-                .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification));
+        Map<AccessType, SecurityClassification> roleData = jdbi.withExtension(AccessManagementRepository.class, dao ->
+            dao.getRoles(Collections.singleton(roleName), Stream.of(EXPLICIT, ROLE_BASED).collect(toSet())))
+            .stream().collect(toMap(Role::getAccessType, Role::getSecurityClassification));
 
         if (roleData.isEmpty()) {
             return null;

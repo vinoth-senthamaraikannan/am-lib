@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.amlib.internal.utils;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,47 +14,28 @@ import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PRIVATE;
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PUBLIC;
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.RESTRICTED;
 
-@SuppressWarnings({"PMD.UnusedPrivateMethod", "LineLength"})
+@SuppressWarnings({"PMD.UnusedPrivateMethod", "LineLength", "PMD.ArrayIsStoredDirectly"})
 class SecurityClassificationTest {
 
     @ParameterizedTest
-    @MethodSource("createArguments")
-    void whenRoleSecurityClassificationIsHighEnoughResourceShouldBeVisible(boolean expectedResult, SecurityClassification roleClassification, SecurityClassification resourceClassification) {
+    @MethodSource("visibleArguments")
+    void whenRoleSecurityClassificationIsHighEnoughResourceShouldBeVisible(boolean expectedResult,
+                                                                           SecurityClassification roleClassification,
+                                                                           SecurityClassification resourceClassification) {
         boolean isVisible = resourceClassification.isVisible(roleClassification.getHierarchy());
         assertThat(isVisible).isEqualTo(expectedResult);
     }
 
-    @Test
-    void fromValueOfShouldReturnSetOfSecurityClassificationsForNone() {
-        Set<SecurityClassification> securityClassifications = SecurityClassifications.fromValueOf(NONE.getHierarchy());
-
-        assertThat(securityClassifications).containsExactly(NONE);
-    }
-
-    @Test
-    void fromValueOfShouldReturnSetOfSecurityClassificationsForPublic() {
-        Set<SecurityClassification> securityClassifications = SecurityClassifications.fromValueOf(PUBLIC.getHierarchy());
-
-        assertThat(securityClassifications).containsExactlyInAnyOrder(PUBLIC, NONE);
-    }
-
-    @Test
-    void fromValueOfShouldReturnSetOfSecurityClassificationsForPrivate() {
+    @ParameterizedTest
+    @MethodSource("fromValueArguments")
+    void fromValueOfShouldReturnSetOfSecurityClassifications(FromValueArguments args) {
         Set<SecurityClassification> securityClassifications =
-            SecurityClassifications.fromValueOf(PRIVATE.getHierarchy());
+            SecurityClassifications.fromValueOf(args.roleSecurityClassification.getHierarchy());
 
-        assertThat(securityClassifications).containsExactlyInAnyOrder(PRIVATE, PUBLIC, NONE);
+        assertThat(securityClassifications).containsExactlyInAnyOrder(args.securityClassifications);
     }
 
-    @Test
-    void fromValueOfShouldReturnSetOfSecurityClassificationsForRestricted() {
-        Set<SecurityClassification> securityClassifications =
-            SecurityClassifications.fromValueOf(RESTRICTED.getHierarchy());
-
-        assertThat(securityClassifications).containsExactlyInAnyOrder(RESTRICTED, PRIVATE, PUBLIC, NONE);
-    }
-
-    private static Stream<Arguments> createArguments() {
+    private static Stream<Arguments> visibleArguments() {
         return Stream.of(
             Arguments.of(true, PUBLIC, NONE),
             Arguments.of(true, PUBLIC, PUBLIC),
@@ -73,5 +53,25 @@ class SecurityClassificationTest {
             Arguments.of(false, NONE, PRIVATE),
             Arguments.of(false, NONE, RESTRICTED)
         );
+    }
+
+    private static Stream<FromValueArguments> fromValueArguments() {
+        return Stream.of(
+            new FromValueArguments(NONE, NONE),
+            new FromValueArguments(PUBLIC, NONE, PUBLIC),
+            new FromValueArguments(PRIVATE, NONE, PUBLIC, PRIVATE),
+            new FromValueArguments(RESTRICTED, NONE, PUBLIC, PRIVATE, RESTRICTED)
+        );
+    }
+
+    private static class FromValueArguments {
+        private final SecurityClassification roleSecurityClassification;
+        private final SecurityClassification[] securityClassifications;
+
+        private FromValueArguments(SecurityClassification roleSecurityClassification,
+                                   SecurityClassification... securityClassifications) {
+            this.roleSecurityClassification = roleSecurityClassification;
+            this.securityClassifications = securityClassifications;
+        }
     }
 }
