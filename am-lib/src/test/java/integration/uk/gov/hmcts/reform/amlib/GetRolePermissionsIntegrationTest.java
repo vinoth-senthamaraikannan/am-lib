@@ -15,20 +15,18 @@ import uk.gov.hmcts.reform.amlib.models.Pair;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 import uk.gov.hmcts.reform.amlib.models.RolePermissions;
 
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.amlib.enums.AccessType.ROLE_BASED;
+import static uk.gov.hmcts.reform.amlib.enums.Permission.CREATE;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 import static uk.gov.hmcts.reform.amlib.enums.RoleType.IDAM;
-import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PUBLIC;
-import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.RESTRICTED;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_NAME;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_TYPE;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.SERVICE_NAME;
+import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.*;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.*;
 
 class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest {
     private static AccessManagementService service = initService(AccessManagementService.class);
@@ -146,6 +144,47 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         assertThat(rolePermissions.getRoleAccessType()).isEqualTo(ROLE_BASED);
 
         assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
+    }
+
+    @Test
+    void whenRolePermissionIsHighestThenShowAllAttribute() {
+
+        Map.Entry<Set<Permission>, SecurityClassification> readPermission = new Pair<>(ImmutableSet.of(READ), PUBLIC);
+        Map.Entry<Set<Permission>, SecurityClassification> readPermissionPrivate =
+            new Pair<>(ImmutableSet.of(READ), PRIVATE);
+
+        ImmutableSet multiPermission = ImmutableSet.builder().add(READ).add(CREATE).build();
+
+        Map.Entry<Set<Permission>, SecurityClassification> readPermissionRestricted =
+            new Pair(multiPermission, RESTRICTED);
+
+        importerService.addRole(roleName, IDAM, RESTRICTED, ROLE_BASED);
+
+        attributePermissionsForRole = ImmutableMap.of(
+            JsonPointer.valueOf(""), readPermission,
+            JsonPointer.valueOf("/address"), readPermissionPrivate,
+            JsonPointer.valueOf("/address/line1"), readPermissionRestricted
+        );
+
+        importerService.grantDefaultPermission(DefaultPermissionGrant.builder()
+            .roleName(roleName)
+            .resourceDefinition(ResourceDefinition.builder()
+                .serviceName(SERVICE_NAME)
+                .resourceType(RESOURCE_TYPE)
+                .resourceName(RESOURCE_NAME)
+                .build())
+            .attributePermissions(attributePermissionsForRole)
+            .build());
+
+        RolePermissions rolePermissions =
+            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
+
+
+         assertThat(rolePermissions.getPermissions())
+            .hasSize(3).
+             contains(new AbstractMap.SimpleEntry<>(JsonPointer.valueOf("/address"), ImmutableSet.of(READ))).
+             containsEntry(JsonPointer.valueOf("/address/line1"), multiPermission).
+             contains(new AbstractMap.SimpleEntry<>(JsonPointer.valueOf(""), ImmutableSet.of(READ)));
     }
 
     @Test
