@@ -28,7 +28,6 @@ import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.RESTRICTED;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_NAME;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_TYPE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.SERVICE_NAME;
 
 class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest {
     private static AccessManagementService service = initService(AccessManagementService.class);
@@ -53,7 +52,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         ));
 
         RolePermissions rolePermissions =
-            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
+            service.getRolePermissions(buildResource(serviceName, RESOURCE_TYPE, RESOURCE_NAME), roleName);
 
         assertThat(rolePermissions).isEqualTo(RolePermissions.builder()
             .permissions(ImmutableMap.of(
@@ -83,15 +82,11 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         ));
 
         RolePermissions rolePermissions =
-            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
+            service.getRolePermissions(buildResource(serviceName, RESOURCE_TYPE, RESOURCE_NAME), roleName);
 
         assertThat(rolePermissions).isEqualTo(RolePermissions.builder()
-            .permissions(ImmutableMap.of(
-                JsonPointer.valueOf(""), ImmutableSet.of(READ)
-            ))
-            .securityClassifications(ImmutableMap.of(
-                JsonPointer.valueOf(""), PUBLIC
-            ))
+            .permissions(ImmutableMap.of(JsonPointer.valueOf(""), ImmutableSet.of(READ)))
+            .securityClassifications(ImmutableMap.of(JsonPointer.valueOf(""), PUBLIC))
             .roleAccessType(ROLE_BASED)
             .roleSecurityClassification(PUBLIC)
             .build());
@@ -106,7 +101,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         grantDefaultPermissionForRole(roleName, ImmutableMap.of(JsonPointer.valueOf("/payment"), publicReadPermission));
 
         RolePermissions rolePermissions =
-            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
+            service.getRolePermissions(buildResource(serviceName, RESOURCE_TYPE, RESOURCE_NAME), roleName);
 
         assertThat(rolePermissions).isNull();
     }
@@ -122,7 +117,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenResourceTypeDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            buildResource(SERVICE_NAME, "Unknown Resource Type", RESOURCE_NAME), ROLE_NAME);
+            buildResource(serviceName, "Unknown Resource Type", RESOURCE_NAME), ROLE_NAME);
 
         assertThat(rolePermissions).isNull();
     }
@@ -130,7 +125,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenResourceNameDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            buildResource(SERVICE_NAME, RESOURCE_TYPE, "Unknown Resource Name"), ROLE_NAME);
+            buildResource(serviceName, RESOURCE_TYPE, "Unknown Resource Name"), ROLE_NAME);
 
         assertThat(rolePermissions).isNull();
     }
@@ -138,7 +133,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenDefaultRoleNameDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), "Unknown Role");
+            buildResource(serviceName, RESOURCE_TYPE, RESOURCE_NAME), "Unknown Role");
 
         assertThat(rolePermissions).isNull();
     }
@@ -153,7 +148,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         importerService.grantDefaultPermission(DefaultPermissionGrant.builder()
             .roleName(roleName)
             .resourceDefinition(ResourceDefinition.builder()
-                .serviceName(SERVICE_NAME)
+                .serviceName(serviceName)
                 .resourceType(RESOURCE_TYPE)
                 .resourceName(RESOURCE_NAME)
                 .build())
