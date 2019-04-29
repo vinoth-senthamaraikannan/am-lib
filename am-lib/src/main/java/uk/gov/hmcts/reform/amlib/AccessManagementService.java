@@ -256,7 +256,9 @@ public class AccessManagementService {
      */
     @AuditLog("returned role access to resource defined as '{{resourceDefinition.serviceName}}|"
         + "{{resourceDefinition.resourceType}}|{{resourceDefinition.resourceName}}' for role '{{roleName}}': "
-        + "{{result}}")
+        + "permissions '{{result.permissions}}' from access type '{{result.roleAccessType}}' and "
+        + "security classifications '{{result.securityClassifications}}' due to role security classification "
+        + "'{{result.roleSecurityClassification}}'")
     public RolePermissions getRolePermissions(@NotNull @Valid ResourceDefinition resourceDefinition,
                                               @NotBlank String roleName) {
         Map<AccessType, SecurityClassification> roleData = jdbi.withExtension(AccessManagementRepository.class, dao ->
