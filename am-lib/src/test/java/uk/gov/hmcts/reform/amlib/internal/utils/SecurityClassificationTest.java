@@ -28,7 +28,7 @@ class SecurityClassificationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromValueArguments")
+    @MethodSource("getVisibleSecurityClassificationsArguments")
     void fromValueOfShouldReturnSetOfSecurityClassifications(SecurityClassification securityClassification,
                                                              Set<SecurityClassification> expectedSecurityClassifications) {
         Set<SecurityClassification> securityClassifications =
@@ -57,7 +57,7 @@ class SecurityClassificationTest {
         );
     }
 
-    private static Stream<Arguments> fromValueArguments() {
+    private static Stream<Arguments> getVisibleSecurityClassificationsArguments() {
         return Stream.of(
             Arguments.of(NONE, ImmutableSet.of(NONE)),
             Arguments.of(PUBLIC, ImmutableSet.of(NONE, PUBLIC)),

@@ -34,8 +34,6 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     private static AccessManagementService service = initService(AccessManagementService.class);
     private static DefaultRoleSetupImportService importerService = initService(DefaultRoleSetupImportService.class);
 
-    private Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> attributePermissionsForRole;
-
     private String roleName;
 
     @BeforeEach
@@ -45,12 +43,14 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
 
     @Test
     void whenGettingRolePermissionsShouldReturnPermissionsAndSecurityClassificationsForSpecifiedRole() {
-        Map.Entry<Set<Permission>, SecurityClassification> readPermission = new Pair<>(ImmutableSet.of(READ), PUBLIC);
+        Map.Entry<Set<Permission>, SecurityClassification> publicReadPermission =
+            new Pair<>(ImmutableSet.of(READ), PUBLIC);
 
-        attributePermissionsForRole = ImmutableMap.of(
-            JsonPointer.valueOf("/child"), readPermission,
-            JsonPointer.valueOf("/parent/age"), readPermission
-        );
+        Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> attributePermissionsForRole =
+            ImmutableMap.of(
+                JsonPointer.valueOf("/child"), publicReadPermission,
+                JsonPointer.valueOf("/parent/age"), publicReadPermission
+            );
 
         importerService.addRole(roleName, IDAM, PUBLIC, ROLE_BASED);
 
@@ -67,29 +67,67 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
         RolePermissions rolePermissions =
             service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
 
-        assertThat(rolePermissions.getPermissions())
-            .hasSize(2)
-            .containsEntry(JsonPointer.valueOf("/child"), ImmutableSet.of(READ))
-            .containsEntry(JsonPointer.valueOf("/parent/age"), ImmutableSet.of(READ));
+        assertThat(rolePermissions).isEqualTo(RolePermissions.builder()
+            .permissions(ImmutableMap.of(
+                JsonPointer.valueOf("/child"), ImmutableSet.of(READ),
+                JsonPointer.valueOf("/parent/age"), ImmutableSet.of(READ)
+            ))
+            .securityClassifications(ImmutableMap.of(
+                JsonPointer.valueOf("/child"), PUBLIC,
+                JsonPointer.valueOf("/parent/age"), PUBLIC
+            ))
+            .roleAccessType(ROLE_BASED)
+            .roleSecurityClassification(PUBLIC)
+            .build());
+    }
 
-        assertThat(rolePermissions.getSecurityClassifications())
-            .hasSize(2)
-            .containsEntry(JsonPointer.valueOf("/child"), PUBLIC)
-            .containsEntry(JsonPointer.valueOf("/parent/age"), PUBLIC);
+    @Test
+    void whenGettingRolePermissionsShouldRemoveAttributesWithHigherSecurityClassification() {
+        Map.Entry<Set<Permission>, SecurityClassification> publicReadPermission =
+            new Pair<>(ImmutableSet.of(READ), PUBLIC);
+        Map.Entry<Set<Permission>, SecurityClassification> restrictedReadPermission =
+            new Pair<>(ImmutableSet.of(READ), RESTRICTED);
 
-        assertThat(rolePermissions.getRoleAccessType()).isEqualTo(ROLE_BASED);
+        Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> attributePermissionsForRole =
+            ImmutableMap.of(
+                JsonPointer.valueOf(""), publicReadPermission,
+                JsonPointer.valueOf("/orders"), restrictedReadPermission
+            );
 
-        assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
+        importerService.addRole(roleName, IDAM, PUBLIC, ROLE_BASED);
+
+        importerService.grantDefaultPermission(DefaultPermissionGrant.builder()
+            .roleName(roleName)
+            .resourceDefinition(ResourceDefinition.builder()
+                .serviceName(SERVICE_NAME)
+                .resourceType(RESOURCE_TYPE)
+                .resourceName(RESOURCE_NAME)
+                .build())
+            .attributePermissions(attributePermissionsForRole)
+            .build());
+
+        RolePermissions rolePermissions =
+            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
+
+        assertThat(rolePermissions).isEqualTo(RolePermissions.builder()
+            .permissions(ImmutableMap.of(
+                JsonPointer.valueOf(""), ImmutableSet.of(READ)
+            ))
+            .securityClassifications(ImmutableMap.of(
+                JsonPointer.valueOf(""), PUBLIC
+            ))
+            .roleAccessType(ROLE_BASED)
+            .roleSecurityClassification(PUBLIC)
+            .build());
     }
 
     @Test
     void whenInsufficientRolePermissionsShouldReturnNull() {
-        Map.Entry<Set<Permission>, SecurityClassification> readPermission =
+        Map.Entry<Set<Permission>, SecurityClassification> publicReadPermission =
             new Pair<>(ImmutableSet.of(READ), RESTRICTED);
 
-        attributePermissionsForRole = ImmutableMap.of(
-            JsonPointer.valueOf("/payment"), readPermission
-        );
+        Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> attributePermissionsForRole =
+            ImmutableMap.of(JsonPointer.valueOf("/payment"), publicReadPermission);
 
         importerService.addRole(roleName, IDAM, PUBLIC, ROLE_BASED);
 
@@ -107,45 +145,6 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
             service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
 
         assertThat(rolePermissions).isNull();
-    }
-
-    @Test
-    void whenRolePermissionsHasSecurityClassificationShouldRemoveAttributesWithHigherSecurityClassification() {
-        Map.Entry<Set<Permission>, SecurityClassification> readPermission = new Pair<>(ImmutableSet.of(READ), PUBLIC);
-        Map.Entry<Set<Permission>, SecurityClassification> readPermissionRestricted =
-            new Pair<>(ImmutableSet.of(READ), RESTRICTED);
-
-        attributePermissionsForRole = ImmutableMap.of(
-            JsonPointer.valueOf(""), readPermission,
-            JsonPointer.valueOf("/orders"), readPermissionRestricted
-        );
-
-        importerService.addRole(roleName, IDAM, PUBLIC, ROLE_BASED);
-
-        importerService.grantDefaultPermission(DefaultPermissionGrant.builder()
-            .roleName(roleName)
-            .resourceDefinition(ResourceDefinition.builder()
-                .serviceName(SERVICE_NAME)
-                .resourceType(RESOURCE_TYPE)
-                .resourceName(RESOURCE_NAME)
-                .build())
-            .attributePermissions(attributePermissionsForRole)
-            .build());
-
-        RolePermissions rolePermissions =
-            service.getRolePermissions(buildResource(SERVICE_NAME, RESOURCE_TYPE, RESOURCE_NAME), roleName);
-
-        assertThat(rolePermissions.getPermissions())
-            .hasSize(1)
-            .containsEntry(JsonPointer.valueOf(""), ImmutableSet.of(READ));
-
-        assertThat(rolePermissions.getSecurityClassifications())
-            .hasSize(1)
-            .containsEntry(JsonPointer.valueOf(""), PUBLIC);
-
-        assertThat(rolePermissions.getRoleAccessType()).isEqualTo(ROLE_BASED);
-
-        assertThat(rolePermissions.getRoleSecurityClassification()).isEqualTo(PUBLIC);
     }
 
     @Test
