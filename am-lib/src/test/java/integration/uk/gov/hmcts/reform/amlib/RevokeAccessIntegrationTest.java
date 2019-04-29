@@ -19,7 +19,6 @@ import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 import static uk.gov.hmcts.reform.amlib.helpers.DefaultRoleSetupDataFactory.createResourceDefinition;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.OTHER_ROLE_NAME;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_NAME;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.RESOURCE_TYPE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrant;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createMetadata;
@@ -42,7 +41,7 @@ class RevokeAccessIntegrationTest extends PreconfiguredIntegrationBaseTest {
         accessorId = UUID.randomUUID().toString();
         MDC.put("caller", "Administrator");
         importerService.addResourceDefinition(
-            resourceDefinition = createResourceDefinition(serviceName, RESOURCE_TYPE, RESOURCE_NAME));
+            resourceDefinition = createResourceDefinition(serviceName, UUID.randomUUID().toString(), RESOURCE_NAME));
     }
 
     @Test
