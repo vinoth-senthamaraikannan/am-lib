@@ -16,15 +16,14 @@ public final class SecurityClassifications {
     /**
      * Builds a set of security classifications including and below a given hierarchy.
      *
-     * @param securityClassificationForRole integer value of security classification defined in
-     * {@link SecurityClassification}
+     * @param hierarchy integer value of security classification defined in {@link SecurityClassification}
      * @return a set of security classifications
      */
-    public static Set<SecurityClassification> getVisibleSecurityClassifications(int securityClassificationForRole) {
+    public static Set<SecurityClassification> getVisibleSecurityClassifications(int hierarchy) {
         return EnumSet.allOf(SecurityClassification.class)
             .stream()
             .filter(securityClassification ->
-                securityClassification.isVisible(securityClassificationForRole))
+                securityClassification.isVisible(hierarchy))
             .collect(toSet());
     }
 }
