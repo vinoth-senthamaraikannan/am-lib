@@ -137,14 +137,16 @@ public class AccessManagementService {
      * @param userRoles accessor roles
      * @param resources envelope {@link Resource} and corresponding metadata
      * @return envelope list of {@link FilteredResourceEnvelope} with resource ID, filtered JSON and map of permissions
-     *     if access to resource is configured, otherwise null
+     * if access to resource is configured, otherwise null
      * @throws PersistenceException if any persistence errors were encountered
      */
     public List<FilteredResourceEnvelope> filterResource(@NotBlank String userId,
                                                          @NotEmpty Set<@NotBlank String> userRoles,
-                                                         @NotNull List<@NotNull @Valid Resource> resources) {
+                                                         @NotNull List<@NotNull @Valid Resource> resources,
+                                                         @NotEmpty @Valid Map<JsonPointer, @NotBlank String>
+                                                             attributeSecurityClassification) {
         return resources.stream()
-            .map(resource -> filterResource(userId, userRoles, resource))
+            .map(resource -> filterResource(userId, userRoles, resource, attributeSecurityClassification))
             .collect(toList());
     }
 
@@ -156,7 +158,7 @@ public class AccessManagementService {
      * @param userRoles accessor roles
      * @param resource  envelope {@link Resource} and corresponding metadata
      * @return envelope {@link FilteredResourceEnvelope} with resource ID, filtered JSON and map of permissions if
-     *     access to resource is configured, otherwise null.
+     * access to resource is configured, otherwise null.
      * @throws PersistenceException if any persistence errors were encountered
      */
     @AuditLog("filtered access to resource '{{resource.id}}' defined as '{{resource.definition.serviceName}}|"
@@ -165,7 +167,11 @@ public class AccessManagementService {
         + "and permissions {{result.access.permissions}}")
     public FilteredResourceEnvelope filterResource(@NotBlank String userId,
                                                    @NotEmpty Set<@NotBlank String> userRoles,
-                                                   @NotNull @Valid Resource resource) {
+                                                   @NotNull @Valid Resource resource,
+                                                   @NotEmpty @Valid Map<JsonPointer, @NotBlank String>
+                                                           attributeSecurityClassification) {
+
+        getFilteredAttributesBySecurityClassification(userRoles, attributeSecurityClassification);
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
             dao -> dao.getExplicitAccess(userId, resource.getId()));
 
@@ -217,6 +223,30 @@ public class AccessManagementService {
                 .build())
             .relationships(relationships)
             .build();
+    }
+
+    private List<JsonPointer> getFilteredAttributesBySecurityClassification(@NotEmpty Set<@NotBlank String> userRoles,
+                                                                            @NotEmpty @Valid Map<JsonPointer, String>
+                                                                                attributeSecurityClassification) {
+
+        final Set<SecurityClassification> securityClassificationSet =
+            SecurityClassifications.getVisibleSecurityClassifications(getMaxSecurityRole(userRoles));
+
+        return attributeSecurityClassification.entrySet()
+            .stream()
+            .filter(attributes -> securityClassificationSet.stream()
+                .anyMatch(classification -> classification.name().equals(attributes.getValue())))
+            .map(Map.Entry::getKey)
+            .collect(toList());
+    }
+
+    private Integer getMaxSecurityRole(@NotEmpty Set<String> userRoles) {
+        return jdbi.withExtension(AccessManagementRepository.class, dao ->
+            dao.getRoles(userRoles, Stream.of(EXPLICIT, ROLE_BASED).collect(toSet()))
+                .stream()
+                .mapToInt(role -> role.getSecurityClassification().getHierarchy())
+                .max()
+                .orElseThrow(NoSuchElementException::new));
     }
 
     private Set<String> filterRolesWithExplicitAccessType(Set<String> userRoles) {
@@ -298,12 +328,7 @@ public class AccessManagementService {
     @SuppressWarnings("LineLength")
     @AuditLog("returned resources that user with roles '{{userRoles}}' has create permission to: {{result}}")
     public Set<ResourceDefinition> getResourceDefinitionsWithRootCreatePermission(@NotEmpty Set<@NotBlank String> userRoles) {
-        Integer maxSecurityClassificationForRole = jdbi.withExtension(AccessManagementRepository.class, dao ->
-            dao.getRoles(userRoles, Stream.of(EXPLICIT, ROLE_BASED).collect(toSet()))
-                .stream()
-                .mapToInt(role -> role.getSecurityClassification().getHierarchy())
-                .max()
-                .orElseThrow(NoSuchElementException::new));
+        Integer maxSecurityClassificationForRole = getMaxSecurityRole(userRoles);
 
         return jdbi.withExtension(AccessManagementRepository.class, dao ->
             dao.getResourceDefinitionsWithRootCreatePermission(

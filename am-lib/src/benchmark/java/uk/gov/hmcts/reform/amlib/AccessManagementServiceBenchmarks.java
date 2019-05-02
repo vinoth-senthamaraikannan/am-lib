@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.google.common.collect.ImmutableSet;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -8,6 +9,10 @@ import uk.gov.hmcts.reform.amlib.models.Resource;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 import uk.gov.hmcts.reform.amlib.states.BenchmarkState;
 import uk.gov.hmcts.reform.amlib.states.DataState;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @BenchmarkMode(Mode.Throughput)
 @SuppressWarnings({"PMD.NonStaticInitializer", "PMD.EmptyCatchBlock"})
@@ -21,11 +26,16 @@ public class AccessManagementServiceBenchmarks {
         String accessorId = "user-" + id;
         String accessorRole = "caseworker";
         String resourceId = resourceDefinition.getServiceName() + "-resource-" + id;
+        Map<JsonPointer, String> map = new HashMap<JsonPointer, String>() {
+            {
+                put(JsonPointer.valueOf(UUID.randomUUID().toString()), UUID.randomUUID().toString());
+            }
+        };
 
         benchmark.service.filterResource(accessorId, ImmutableSet.of(accessorRole), Resource.builder()
             .id(resourceId)
             .definition(resourceDefinition)
             .data(data.resourceDataFor(resourceDefinition.getServiceName()))
-            .build());
+            .build(), map);
     }
 }
