@@ -30,7 +30,6 @@ import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PRIVATE;
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PUBLIC;
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.RESTRICTED;
 import static uk.gov.hmcts.reform.amlib.helpers.DefaultRoleSetupDataFactory.createResourceDefinition;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
 
 class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest {
     private static AccessManagementService service = initService(AccessManagementService.class);
@@ -39,7 +38,6 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     private ResourceDefinition resourceDefinition;
     private String resourceType;
     private String resourceName;
-
     private String roleName;
 
     @BeforeEach
@@ -129,7 +127,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenServiceNameDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            createResourceDefinition("Unknown Service", resourceType, resourceName), ROLE_NAME);
+            createResourceDefinition("Unknown Service", resourceType, resourceName), roleName);
 
         assertThat(rolePermissions).isNull();
     }
@@ -137,7 +135,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenResourceTypeDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            createResourceDefinition(serviceName, "Unknown Resource Type", resourceName), ROLE_NAME);
+            createResourceDefinition(serviceName, "Unknown Resource Type", resourceName), roleName);
 
         assertThat(rolePermissions).isNull();
     }
@@ -145,7 +143,7 @@ class GetRolePermissionsIntegrationTest extends PreconfiguredIntegrationBaseTest
     @Test
     void shouldReturnNullWhenResourceNameDoesNotExist() {
         RolePermissions rolePermissions = service.getRolePermissions(
-            createResourceDefinition(serviceName, resourceType, "Unknown Resource Name"), ROLE_NAME);
+            createResourceDefinition(serviceName, resourceType, "Unknown Resource Name"), roleName);
 
         assertThat(rolePermissions).isNull();
     }
