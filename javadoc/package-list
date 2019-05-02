@@ -1,0 +1,11 @@
+uk.gov.hmcts.reform.amlib
+uk.gov.hmcts.reform.amlib.enums
+uk.gov.hmcts.reform.amlib.exceptions
+uk.gov.hmcts.reform.amlib.internal
+uk.gov.hmcts.reform.amlib.internal.aspects
+uk.gov.hmcts.reform.amlib.internal.models
+uk.gov.hmcts.reform.amlib.internal.models.query
+uk.gov.hmcts.reform.amlib.internal.repositories
+uk.gov.hmcts.reform.amlib.internal.repositories.mappers
+uk.gov.hmcts.reform.amlib.internal.utils
+uk.gov.hmcts.reform.amlib.models
