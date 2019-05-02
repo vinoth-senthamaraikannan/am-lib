@@ -169,9 +169,8 @@ public class AccessManagementService {
                                                    @NotEmpty Set<@NotBlank String> userRoles,
                                                    @NotNull @Valid Resource resource,
                                                    @NotEmpty @Valid Map<JsonPointer, @NotBlank String>
-                                                           attributeSecurityClassification) {
+                                                       attributeSecurityClassification) {
 
-        getFilteredAttributesBySecurityClassification(userRoles, attributeSecurityClassification);
         List<ExplicitAccessRecord> explicitAccess = jdbi.withExtension(AccessManagementRepository.class,
             dao -> dao.getExplicitAccess(userId, resource.getId()));
 
@@ -205,8 +204,10 @@ public class AccessManagementService {
             accessType = EXPLICIT;
         }
 
-        JsonNode filteredJson = filterService.filterJson(resource.getData(), attributePermissions);
+        attributePermissions = filterAttributePermission(attributePermissions,
+            getFilteredAttributesBySecurityClassification(userRoles, attributeSecurityClassification));
 
+        JsonNode filteredJson = filterService.filterJson(resource.getData(), attributePermissions);
         Set<String> relationships = explicitAccess.stream()
             .map(ExplicitAccessRecord::getRelationship)
             .collect(toSet());
@@ -225,16 +226,22 @@ public class AccessManagementService {
             .build();
     }
 
+    private Map<JsonPointer, Set<Permission>> filterAttributePermission(
+        Map<JsonPointer, Set<Permission>> attributePermissions, List<JsonPointer> visibleAttributes) {
+        attributePermissions.entrySet().removeIf(entry -> !visibleAttributes.contains((entry.getKey())));
+        return attributePermissions;
+    }
+
     private List<JsonPointer> getFilteredAttributesBySecurityClassification(@NotEmpty Set<@NotBlank String> userRoles,
                                                                             @NotEmpty @Valid Map<JsonPointer, String>
                                                                                 attributeSecurityClassification) {
 
-        final Set<SecurityClassification> securityClassificationSet =
+        final Set<SecurityClassification> securityClassifications =
             SecurityClassifications.getVisibleSecurityClassifications(getMaxSecurityRole(userRoles));
 
         return attributeSecurityClassification.entrySet()
             .stream()
-            .filter(attributes -> securityClassificationSet.stream()
+            .filter(attributes -> securityClassifications.stream()
                 .anyMatch(classification -> classification.name().equals(attributes.getValue())))
             .map(Map.Entry::getKey)
             .collect(toList());

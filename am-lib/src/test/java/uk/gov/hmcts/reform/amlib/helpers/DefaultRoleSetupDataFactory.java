@@ -33,7 +33,11 @@ public final class DefaultRoleSetupDataFactory {
 
     public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, JsonPointer attribute, Set<Permission> permissions) {
         return createDefaultPermissionGrant(resourceDefinition, permissions, attribute, PUBLIC);
+    }
 
+    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, JsonPointer attribute,
+                                                                      Set<Permission> permissions, SecurityClassification classification) {
+        return createDefaultPermissionGrant(resourceDefinition, permissions, attribute, classification);
     }
 
     public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, Set<Permission> permissions, JsonPointer attribute, SecurityClassification securityClassification) {

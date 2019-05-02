@@ -1,6 +1,9 @@
 package integration.uk.gov.hmcts.reform.amlib;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,15 +15,21 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.amlib.AccessManagementService;
 import uk.gov.hmcts.reform.amlib.DefaultRoleSetupImportService;
 import uk.gov.hmcts.reform.amlib.enums.AccessType;
+import uk.gov.hmcts.reform.amlib.enums.Permission;
 import uk.gov.hmcts.reform.amlib.enums.RoleType;
+import uk.gov.hmcts.reform.amlib.enums.SecurityClassification;
+import uk.gov.hmcts.reform.amlib.internal.utils.Permissions;
 import uk.gov.hmcts.reform.amlib.models.AccessEnvelope;
 import uk.gov.hmcts.reform.amlib.models.DefaultPermissionGrant;
 import uk.gov.hmcts.reform.amlib.models.FilteredResourceEnvelope;
 import uk.gov.hmcts.reform.amlib.models.Resource;
 import uk.gov.hmcts.reform.amlib.models.ResourceDefinition;
 
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,11 +51,14 @@ import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrant;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createGrantForWholeDocument;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createPermissions;
 import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createResource;
+import static uk.gov.hmcts.reform.amlib.helpers.TestDataFactory.createResourceByData;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "LineLength"})
 class FilterResourceIntegrationTest extends PreconfiguredIntegrationBaseTest {
     private static final String PARENT_ATTRIBUTE = "/parent";
     private static final String CHILD_ATTRIBUTE = "/parent/child";
+    private final ObjectMapper mapper = new ObjectMapper()
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     private static AccessManagementService service = initService(AccessManagementService.class);
     private static DefaultRoleSetupImportService importerService = initService(DefaultRoleSetupImportService.class);
     private String resourceId;
@@ -334,6 +346,43 @@ class FilterResourceIntegrationTest extends PreconfiguredIntegrationBaseTest {
                 .accessType(EXPLICIT)
                 .build())
             .relationships(ImmutableSet.of(OTHER_ROLE_NAME, ROLE_NAME))
+            .build());
+    }
+
+    @Test
+    void whenRoleSecurityClassificationMatchesWithInputAttributePermissions() throws IOException {
+        Map<JsonPointer, String> map  = new ConcurrentHashMap<>();
+        map.put(JsonPointer.valueOf(""), "PUBLIC");
+        map.put(JsonPointer.valueOf("/name"), "PUBLIC");
+        map.put(JsonPointer.valueOf("/age"), "PUBLIC");
+        map.put(JsonPointer.valueOf("/address"), "PUBLIC");
+        map.put(JsonPointer.valueOf("/address/city"), "PUBLIC");
+
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/filterInput.json"));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, ROOT_ATTRIBUTE, ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/name"), ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/age"), ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/address"), ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/address/city"), ImmutableSet.of(READ), PUBLIC));
+
+        FilteredResourceEnvelope result = service.filterResource(accessorId, ROLE_NAMES, createResourceByData(resourceId, resourceDefinition, inputJson), map);
+
+        assertThat(result).isEqualTo(FilteredResourceEnvelope.builder()
+            .resource(Resource.builder()
+                .id(resourceId)
+                .definition(resourceDefinition)
+                .data(inputJson)
+                .build())
+            .access(AccessEnvelope.builder()
+                .permissions(ImmutableMap.of(
+                    JsonPointer.valueOf(""), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/name"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/age"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/address"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/address/city"), ImmutableSet.of(READ)))
+                .accessType(AccessType.ROLE_BASED)
+                .build())
+            .relationships(ImmutableSet.of())
             .build());
     }
 
