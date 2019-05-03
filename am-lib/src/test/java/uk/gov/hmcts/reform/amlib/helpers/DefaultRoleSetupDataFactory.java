@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PUBLIC;
-import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
 
 @SuppressWarnings("LineLength")
 public final class DefaultRoleSetupDataFactory {
@@ -21,34 +20,14 @@ public final class DefaultRoleSetupDataFactory {
         throw new UnsupportedOperationException("Constructing utility class is not supported");
     }
 
+    @SuppressWarnings("LineLength")
     public static Map<JsonPointer, Map.Entry<Set<Permission>, SecurityClassification>> createPermissionsForAttribute(JsonPointer attribute, Set<Permission> permissions, SecurityClassification securityClassification) {
         Map.Entry<Set<Permission>, SecurityClassification> pair = new Pair<>(permissions, securityClassification);
 
         return ImmutableMap.of(attribute, pair);
     }
 
-    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, Set<Permission> permissions) {
-        return createDefaultPermissionGrant(resourceDefinition, permissions, JsonPointer.valueOf(""), PUBLIC);
-    }
-
-    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, JsonPointer attribute, Set<Permission> permissions) {
-        return createDefaultPermissionGrant(resourceDefinition, permissions, attribute, PUBLIC);
-    }
-
-    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, JsonPointer attribute,
-                                                                      Set<Permission> permissions, SecurityClassification classification) {
-        return createDefaultPermissionGrant(resourceDefinition, permissions, attribute, classification);
-    }
-
-    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resourceDefinition, Set<Permission> permissions, JsonPointer attribute, SecurityClassification securityClassification) {
-        return DefaultPermissionGrant.builder()
-            .roleName(ROLE_NAME)
-            .resourceDefinition(resourceDefinition)
-            .attributePermissions(createPermissionsForAttribute(attribute, permissions, securityClassification))
-            .build();
-    }
-
-    public static DefaultPermissionGrant createDefaultPermissionGrant(ResourceDefinition resource, Set<Permission> permissions, String attribute, String roleName) {
+    public static DefaultPermissionGrant createDefaultPermissionGrant(String roleName, ResourceDefinition resource, String attribute, Set<Permission> permissions) {
         return DefaultPermissionGrant.builder()
             .roleName(roleName)
             .resourceDefinition(ResourceDefinition.builder()
@@ -58,6 +37,22 @@ public final class DefaultRoleSetupDataFactory {
                 .build())
             .attributePermissions(createPermissionsForAttribute(JsonPointer.valueOf(attribute), permissions, PUBLIC))
             .build();
+    }
+
+    public static DefaultPermissionGrant createDefaultPermissionGrants(String roleName, ResourceDefinition resource, String attribute, Set<Permission> permissions, SecurityClassification classification) {
+        return DefaultPermissionGrant.builder()
+            .roleName(roleName)
+            .resourceDefinition(ResourceDefinition.builder()
+                .serviceName(resource.getServiceName())
+                .resourceType(resource.getResourceType())
+                .resourceName(resource.getResourceName())
+                .build())
+            .attributePermissions(createPermissionsForAttribute(JsonPointer.valueOf(attribute), permissions, classification))
+            .build();
+    }
+    public static DefaultPermissionGrant createDefaultPermissionGrant(String roleName, ResourceDefinition resourceDefinition, String attribute,
+                                                                      Set<Permission> permissions, SecurityClassification classification) {
+        return createDefaultPermissionGrants(roleName, resourceDefinition,  attribute, permissions, classification);
     }
 
     public static ResourceDefinition createResourceDefinition(String serviceName,
