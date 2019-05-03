@@ -35,15 +35,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.amlib.enums.AccessType.EXPLICIT;
+import static uk.gov.hmcts.reform.amlib.enums.AccessType.ROLE_BASED;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.CREATE;
 import static uk.gov.hmcts.reform.amlib.enums.Permission.READ;
 import static uk.gov.hmcts.reform.amlib.enums.RoleType.IDAM;
+import static uk.gov.hmcts.reform.amlib.enums.RoleType.RESOURCE;
+import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PRIVATE;
 import static uk.gov.hmcts.reform.amlib.enums.SecurityClassification.PUBLIC;
 import static uk.gov.hmcts.reform.amlib.helpers.DefaultRoleSetupDataFactory.createDefaultPermissionGrant;
 import static uk.gov.hmcts.reform.amlib.helpers.DefaultRoleSetupDataFactory.createPermissionsForAttribute;
 import static uk.gov.hmcts.reform.amlib.helpers.DefaultRoleSetupDataFactory.createResourceDefinition;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.DATA;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.OTHER_ROLE_NAME;
+import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.PRIVATE_ROLE;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAME;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROLE_NAMES;
 import static uk.gov.hmcts.reform.amlib.helpers.TestConstants.ROOT_ATTRIBUTE;
@@ -385,6 +389,45 @@ class FilterResourceIntegrationTest extends PreconfiguredIntegrationBaseTest {
             .relationships(ImmutableSet.of())
             .build());
     }
+
+    @Test
+    void whenRoleSecurityClassificationMatchesWithInputAttributePermissionsPrivate() throws IOException {
+        Map<JsonPointer, String> map  = new ConcurrentHashMap<>();
+        map.put(JsonPointer.valueOf(""), "PUBLIC");
+        map.put(JsonPointer.valueOf("/name"), "PRIVATE");
+        map.put(JsonPointer.valueOf("/age"), "PRIVATE");
+        map.put(JsonPointer.valueOf("/address"), "PUBLIC");
+        map.put(JsonPointer.valueOf("/address/city"), "PUBLIC");
+
+        JsonNode inputJson = mapper.readTree(ClassLoader.getSystemResource("FilterServiceResources/filterInput.json"));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, ROOT_ATTRIBUTE, ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/name"), ImmutableSet.of(READ), PRIVATE));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/age"), ImmutableSet.of(READ), PUBLIC));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/address"), ImmutableSet.of(READ), PRIVATE));
+        importerService.grantDefaultPermission(createDefaultPermissionGrant(resourceDefinition, JsonPointer.valueOf("/address/city"), ImmutableSet.of(READ), PUBLIC));
+
+        FilteredResourceEnvelope result = service.filterResource(accessorId, ImmutableSet.of("Private Role Name"),
+            createResourceByData(resourceId, resourceDefinition, inputJson), map);
+
+        assertThat(result).isEqualTo(FilteredResourceEnvelope.builder()
+            .resource(Resource.builder()
+                .id(resourceId)
+                .definition(resourceDefinition)
+                .data(inputJson)
+                .build())
+            .access(AccessEnvelope.builder()
+                .permissions(ImmutableMap.of(
+                    JsonPointer.valueOf(""), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/name"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/age"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/address"), ImmutableSet.of(READ),
+                    JsonPointer.valueOf("/address/city"), ImmutableSet.of(READ)))
+                .accessType(AccessType.ROLE_BASED)
+                .build())
+            .relationships(ImmutableSet.of())
+            .build());
+    }
+
 
     @NotNull
     static Map<JsonPointer, String> getJsonPointerStringMap() {
